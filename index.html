@@ -1,0 +1,1990 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a1a1a">
+<meta name="description" content="JIS規格鋼材の検索・参照ツール。エレベーター・機械部品の品質保証業務向け。">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JIS鋼材">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<title>鋼材JIS規格 早見表</title>
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --bg-card: #ffffff;
+    --ink: #1a1a1a;
+    --ink-dim: #4a4a4a;
+    --ink-faint: #8a8a8a;
+    --accent: #8b0000;
+    --gold: #b8860b;
+    --line: #d4cfc4;
+    --line-soft: #e8e3d8;
+    --warn: #b8860b;
+    --hitachi: #003399;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: contain;
+  }
+
+  body {
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  header {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 14px 16px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 3px double var(--line);
+  }
+
+  .title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .title-jp {
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+
+  .menu-btn {
+    background: none;
+    border: 1px solid var(--bg);
+    color: var(--bg);
+    width: 34px;
+    height: 34px;
+    font-size: 18px;
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+
+  .search-box {
+    position: relative;
+  }
+
+  .search-box input {
+    width: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    border: none;
+    padding: 11px 14px 11px 40px;
+    font-size: 16px;
+    font-family: inherit;
+    border-radius: 2px;
+    outline: none;
+  }
+
+  .search-box input:focus {
+    box-shadow: inset 0 -2px 0 var(--accent);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: var(--ink-faint);
+    font-family: Georgia, serif;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--ink-faint);
+    font-size: 20px;
+    padding: 6px 10px;
+    cursor: pointer;
+    display: none;
+  }
+
+  .clear-btn.visible { display: block; }
+
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 10px 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    scrollbar-width: none;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+
+  .filter-chip {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--ink-dim);
+    color: var(--ink-dim);
+    font-family: inherit;
+    font-size: 13px;
+    border-radius: 16px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .filter-chip.active {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+
+  .filter-chip.user-tag {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .filter-chip.user-tag.active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+
+  .filter-chip.star-tag {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .filter-chip.star-tag.active {
+    background: var(--gold);
+    color: var(--bg);
+    border-color: var(--gold);
+  }
+
+  .filter-chip.hitachi-tag {
+    border-color: var(--hitachi);
+    color: var(--hitachi);
+  }
+
+  .filter-chip.hitachi-tag.active {
+    background: var(--hitachi);
+    color: var(--bg);
+    border-color: var(--hitachi);
+  }
+
+  .meta-row {
+    padding: 10px 16px 4px;
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-family: Georgia, serif;
+    letter-spacing: 0.05em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .count-num {
+    font-size: 14px;
+    color: var(--accent);
+    font-weight: bold;
+  }
+
+  .cards {
+    padding: 6px 12px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    padding: 14px 14px;
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.15s, transform 0.1s;
+  }
+
+  .card:active {
+    transform: scale(0.99);
+    border-color: var(--ink);
+  }
+
+  .card.user-added {
+    border-left: 3px solid var(--accent);
+  }
+
+  .card.hitachi-card {
+    border-left: 3px solid var(--hitachi);
+  }
+
+  .card-star {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--line);
+    padding: 4px;
+    line-height: 1;
+    z-index: 2;
+  }
+
+  .card-star.active {
+    color: var(--gold);
+  }
+
+  .card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+    padding-right: 28px;
+  }
+
+  .card-code {
+    font-family: "Courier New", monospace;
+    font-size: 17px;
+    font-weight: bold;
+  }
+
+  .card-jis {
+    font-size: 10px;
+    color: var(--ink-faint);
+    font-family: "Courier New", monospace;
+    background: var(--line-soft);
+    padding: 2px 6px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+
+  .card-jis.none {
+    color: var(--warn);
+    font-style: italic;
+  }
+
+  .card-jis.user {
+    color: var(--accent);
+    background: rgba(139, 0, 0, 0.08);
+  }
+
+  .card-jis.maker {
+    color: var(--hitachi);
+    background: rgba(0, 51, 153, 0.08);
+  }
+
+  .card-name {
+    font-size: 13px;
+    color: var(--ink-dim);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 28px;
+  }
+
+  .card-en {
+    font-family: Georgia, serif;
+    font-size: 10px;
+    color: var(--ink-faint);
+    font-style: italic;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .card-tags {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-family: Georgia, serif;
+    letter-spacing: 0.1em;
+  }
+
+  .tag.user-tag {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .tag.maker-tag {
+    background: var(--hitachi);
+    color: var(--bg);
+  }
+
+  .tag.brand-tag {
+    background: var(--gold);
+    color: var(--bg);
+  }
+
+  .modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .modal-bg.visible {
+    display: flex;
+    animation: fadeIn 0.2s;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal {
+    background: var(--bg);
+    width: 100%;
+    max-width: 600px;
+    max-height: 92vh;
+    overflow-y: auto;
+    border-top: 4px solid var(--ink);
+    animation: slideUp 0.25s;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .modal-head {
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-card);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-code {
+    font-family: "Courier New", monospace;
+    font-size: 22px;
+    font-weight: bold;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .modal-star {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--line);
+    padding: 4px 8px;
+  }
+
+  .modal-star.active {
+    color: var(--gold);
+  }
+
+  .icon-btn {
+    background: none;
+    border: 1px solid var(--ink);
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ink);
+    border-radius: 2px;
+  }
+
+  .icon-btn.danger {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .gallery {
+    margin-bottom: 18px;
+  }
+
+  .gallery-row {
+    margin-bottom: 12px;
+    border: 1px solid var(--line);
+    background: var(--bg-card);
+    overflow: hidden;
+  }
+
+  .gallery-label {
+    background: var(--line-soft);
+    padding: 6px 10px;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    font-family: Georgia, serif;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .gallery-content {
+    padding: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-start;
+    align-items: center;
+    min-height: 110px;
+  }
+
+  .photo-thumb {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    border: 1px solid var(--line);
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .photo-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .photo-thumb .del {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 2px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .add-photo {
+    width: 90px;
+    height: 90px;
+    border: 2px dashed var(--ink-faint);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-faint);
+    font-family: inherit;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .add-photo span:first-child {
+    font-size: 22px;
+  }
+
+  .gallery-empty {
+    color: var(--ink-faint);
+    font-size: 12px;
+    text-align: center;
+    padding: 20px;
+    width: 100%;
+  }
+
+  .field {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed var(--line);
+  }
+
+  .field:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  .field-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    font-family: Georgia, serif;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .field-value {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink);
+  }
+
+  .field-value.en {
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink-dim);
+  }
+
+  .field-value.mono {
+    font-family: "Courier New", monospace;
+    font-size: 14px;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--ink-faint);
+  }
+
+  .empty-mark {
+    font-size: 32px;
+    font-family: Georgia, serif;
+    color: var(--line);
+    margin-bottom: 10px;
+  }
+
+  .menu-modal {
+    background: var(--bg);
+    width: 100%;
+    max-width: 600px;
+    border-top: 4px solid var(--ink);
+    animation: slideUp 0.25s;
+  }
+
+  .menu-item {
+    display: block;
+    width: 100%;
+    padding: 16px 20px;
+    background: var(--bg-card);
+    border: none;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .menu-item:active { background: var(--line-soft); }
+
+  .menu-item .icon {
+    display: inline-block;
+    width: 28px;
+    margin-right: 8px;
+    color: var(--accent);
+    font-family: Georgia, serif;
+  }
+
+  .menu-item .sub {
+    display: block;
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-top: 2px;
+    margin-left: 36px;
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--ink-dim);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    font-family: Georgia, serif;
+  }
+
+  .form-label .req {
+    color: var(--accent);
+    margin-left: 4px;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--ink);
+  }
+
+  .form-textarea {
+    min-height: 80px;
+    resize: vertical;
+  }
+
+  .form-help {
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-top: 4px;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--ink);
+    background: var(--bg-card);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+
+  .btn.primary {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .btn.accent {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 12px 20px;
+    border-radius: 2px;
+    z-index: 500;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    max-width: 90%;
+    text-align: center;
+  }
+
+  .toast.visible {
+    opacity: 1;
+  }
+
+  .setting-section {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+
+  .setting-title {
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  .setting-desc {
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+
+  .ornament {
+    text-align: center;
+    color: var(--line);
+    font-family: Georgia, serif;
+    font-size: 14px;
+    letter-spacing: 0.5em;
+    padding: 16px 0 8px;
+  }
+
+  .img-viewer {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .img-viewer.visible { display: flex; }
+
+  .img-viewer img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .img-viewer .close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid white;
+    color: white;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+
+  /* 日立カード専用 */
+  .hitachi-banner {
+    background: var(--hitachi);
+    color: white;
+    padding: 8px 12px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    margin-bottom: 14px;
+    font-family: Georgia, serif;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <span class="title-jp">鋼材JIS規格 早見表</span>
+    <button class="menu-btn" id="menuBtn">≡</button>
+  </div>
+  <div class="search-box">
+    <span class="search-icon">⌕</span>
+    <input id="search" type="text" placeholder="略称・名称・規格番号で検索" autocomplete="off">
+    <button id="clearBtn" class="clear-btn">×</button>
+  </div>
+</header>
+
+<div class="filter-row" id="filters"></div>
+
+<div class="meta-row">
+  <span><span class="count-num" id="count">0</span> items</span>
+  <span id="filterLabel">— all —</span>
+</div>
+
+<div class="cards" id="cards"></div>
+
+<div class="ornament">❦</div>
+
+<!-- 詳細モーダル -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-code" id="modalCode"></span>
+      <div class="modal-actions">
+        <button class="modal-star" id="modalStar" title="お気に入り">☆</button>
+        <button class="icon-btn danger" id="deleteBtn" style="display:none;" title="削除">✕</button>
+        <button class="icon-btn" id="closeBtn">×</button>
+      </div>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- メニュー -->
+<div class="modal-bg" id="menuModal">
+  <div class="menu-modal">
+    <div class="modal-head">
+      <span style="font-size:16px;letter-spacing:0.1em;">MENU</span>
+      <button class="icon-btn" id="menuCloseBtn">×</button>
+    </div>
+    <button class="menu-item" data-action="add">
+      <span class="icon">+</span>新しい鋼材を仮追加
+      <span class="sub">職場で見つけた鋼材をその場で登録</span>
+    </button>
+    <button class="menu-item" data-action="export">
+      <span class="icon">↑</span>データをエクスポート
+      <span class="sub">仮追加・写真・お気に入りをファイル保存</span>
+    </button>
+    <button class="menu-item" data-action="import">
+      <span class="icon">↓</span>データをインポート
+      <span class="sub">バックアップファイルから復元</span>
+    </button>
+    <button class="menu-item" data-action="settings">
+      <span class="icon">⚙</span>設定
+      <span class="sub">Googleフォーム連携・データ管理</span>
+    </button>
+    <button class="menu-item" data-action="about">
+      <span class="icon">i</span>このアプリについて
+    </button>
+  </div>
+</div>
+
+<!-- 新規追加 -->
+<div class="modal-bg" id="addModal">
+  <div class="modal">
+    <div class="modal-head">
+      <span style="font-size:16px;letter-spacing:0.1em;">新規追加(仮登録)</span>
+      <button class="icon-btn" id="addCloseBtn">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--ink-dim);margin-bottom:14px;line-height:1.6;">
+        職場で見つけた未登録の鋼材を仮登録できます。<br>
+        ローカル保存後、管理者へ送信ボタンでGoogleフォームに転送できます。
+      </p>
+      <div class="form-group">
+        <label class="form-label">略称<span class="req">*</span></label>
+        <input class="form-input" id="addCode" placeholder="例: SUS304" maxlength="30">
+      </div>
+      <div class="form-group">
+        <label class="form-label">名称<span class="req">*</span></label>
+        <input class="form-input" id="addName" placeholder="例: ステンレス鋼" maxlength="80">
+      </div>
+      <div class="form-group">
+        <label class="form-label">JIS規格</label>
+        <input class="form-input" id="addJis" placeholder="例: JIS G 4304">
+        <div class="form-help">不明な場合は空欄でOK</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">英名</label>
+        <input class="form-input" id="addEn" placeholder="例: Stainless Steel">
+      </div>
+      <div class="form-group">
+        <label class="form-label">分類</label>
+        <select class="form-select" id="addCategory">
+          <option value="一般構造用">一般構造用</option>
+          <option value="鋼板(熱延)">鋼板(熱延)</option>
+          <option value="鋼板(冷延)">鋼板(冷延)</option>
+          <option value="メッキ鋼板">メッキ鋼板</option>
+          <option value="高耐食メッキ">高耐食メッキ</option>
+          <option value="塗装鋼板">塗装鋼板</option>
+          <option value="棒鋼">棒鋼</option>
+          <option value="形鋼">形鋼</option>
+          <option value="鋼管">鋼管</option>
+          <option value="ステンレス">ステンレス</option>
+          <option value="NSSC材">NSSC材</option>
+          <option value="合金鋼">合金鋼</option>
+          <option value="炭素鋼">炭素鋼</option>
+          <option value="工具鋼">工具鋼</option>
+          <option value="ばね鋼">ばね鋼</option>
+          <option value="鋳鉄">鋳鉄</option>
+          <option value="日立EV機種">日立EV機種</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">特徴・用途</label>
+        <textarea class="form-textarea" id="addFeature" placeholder="どんな鋼材か、どこで使われているか"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">備考</label>
+        <textarea class="form-textarea" id="addNote" placeholder="その他気づいたこと"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">登録者名(任意)</label>
+        <input class="form-input" id="addRegistrant" placeholder="例: 星">
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="addSaveOnlyBtn">ローカル保存のみ</button>
+        <button class="btn accent" id="addSendBtn">保存して管理者に送信</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 設定 -->
+<div class="modal-bg" id="settingsModal">
+  <div class="modal">
+    <div class="modal-head">
+      <span style="font-size:16px;letter-spacing:0.1em;">設定</span>
+      <button class="icon-btn" id="settingsCloseBtn">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="setting-section">
+        <div class="setting-title">Googleフォーム連携</div>
+        <div class="setting-desc">
+          管理者送信ボタンから飛ばすGoogleフォームのURLを設定します。
+        </div>
+        <div class="form-group">
+          <input class="form-input" id="formUrlInput" placeholder="https://docs.google.com/forms/d/e/..../viewform">
+        </div>
+        <button class="btn primary" id="saveFormUrlBtn">保存</button>
+      </div>
+
+      <div class="setting-section">
+        <div class="setting-title">仮追加データ</div>
+        <div class="setting-desc" id="userDataStat">読み込み中...</div>
+        <button class="btn" id="clearUserDataBtn">仮追加データを全削除</button>
+      </div>
+
+      <div class="setting-section">
+        <div class="setting-title">参考画像・撮影写真</div>
+        <div class="setting-desc" id="photoStat">読み込み中...</div>
+        <button class="btn" id="clearPhotosBtn">写真を全削除</button>
+      </div>
+
+      <div class="setting-section">
+        <div class="setting-title">お気に入り</div>
+        <div class="setting-desc" id="starStat">読み込み中...</div>
+        <button class="btn" id="clearStarsBtn">お気に入りを全解除</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- About -->
+<div class="modal-bg" id="aboutModal">
+  <div class="modal">
+    <div class="modal-head">
+      <span style="font-size:16px;letter-spacing:0.1em;">このアプリについて</span>
+      <button class="icon-btn" id="aboutCloseBtn">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:14px;line-height:1.8;">
+        <p style="margin-bottom:12px;"><strong>鋼材JIS規格 早見表</strong></p>
+        <p style="margin-bottom:12px;color:var(--ink-dim);font-size:13px;">
+          現場でJIS規格鋼材の情報を素早く参照するための早見表ツール。
+          70種類超の鋼材データ + 日立エレベーター機種情報を収録。
+        </p>
+        <div class="field">
+          <span class="field-label">使い方</span>
+          <div class="field-value" style="font-size:13px;">
+            ・検索ボックスで略称・名称・規格番号で検索<br>
+            ・上部チップで分類フィルタ<br>
+            ・★マークで「よく使う」をブックマーク<br>
+            ・カードをタップで詳細表示<br>
+            ・詳細画面で参考画像/現場撮影を保存可能<br>
+            ・メニューから新規追加・エクスポート/インポート可能
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label">凡例 / Legend</span>
+          <div class="field-value" style="font-size:13px;">
+            <span style="color:var(--accent);">●</span> 赤縦線：ユーザー仮追加<br>
+            <span style="color:var(--hitachi);">●</span> 青縦線：日立EV機種情報<br>
+            <span style="color:var(--gold);">★</span> 金色：お気に入り
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label">注意事項</span>
+          <div class="field-value" style="font-size:13px;">
+            撮影写真・仮追加データはこの端末のブラウザ内に保存。<br>
+            別端末では見られません。バックアップはエクスポートで。<br>
+            日立EV機種情報は公開資料に基づくもので、内部部品仕様は含みません。
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 画像ビューア -->
+<div class="img-viewer" id="imgViewer">
+  <button class="close" id="imgViewerClose">×</button>
+  <img id="imgViewerImg" src="" alt="">
+</div>
+
+<input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;">
+<input type="file" id="refPhotoInput" accept="image/*" style="display:none;">
+<input type="file" id="importInput" accept="application/json" style="display:none;">
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================
+// データ定義(70種類超)
+// ============================================
+const DATA = [
+  // ===== 一般構造用圧延鋼材 =====
+  { code: "SS400", name: "一般構造用圧延鋼材", jis: "JIS G 3101", en: "Steel Structural (400 N/mm²級)", category: "一般構造用", feature: "最も汎用的な構造用鋼材。引張強さ400〜510 N/mm²。溶接性・加工性が良く、建築・橋梁・機械部品など幅広く使用される。", note: "SS400の「SS」はSteel Structural、400は引張強さの下限値(N/mm²)を示す。" },
+  { code: "SS400-D", name: "一般構造用圧延鋼材(引抜き材)", jis: "なし(加工後通称)", en: "Steel Structural - Drawn", category: "一般構造用", feature: "SS400を冷間引抜き加工したもの。寸法精度が高く、表面が滑らか。「-D」はDrawn(引抜き)を意味する加工区分。", note: "JIS規格上のグレード名ではなく、加工後の業界通称。" },
+  { code: "SS400A", name: "一般構造用圧延鋼材", jis: "JIS G 3101 (旧規格)", en: "Steel Structural - Type A", category: "一般構造用", feature: "旧JIS(1994年以前)におけるSS400の種別記号。現行JIS G 3101ではSS400に種別は無く、単にSS400と呼称する。", note: "現行規格には存在しない。社内資料に残っている場合は旧規格時代の表記。" },
+  { code: "SS400B", name: "一般構造用圧延鋼材", jis: "JIS G 3101 (旧規格)", en: "Steel Structural - Type B", category: "一般構造用", feature: "旧JIS(1994年以前)におけるSS400の種別記号。現行JIS G 3101ではSS400に種別は無く、単にSS400と呼称する。", note: "現行規格には存在しない。社内資料に残っている場合は旧規格時代の表記。" },
+  { code: "SS400B-D", name: "一般構造用圧延鋼材(引抜き材)", jis: "なし(加工後通称)", en: "Steel Structural Type B - Drawn", category: "一般構造用", feature: "旧規格SS400Bを冷間引抜き加工したもの。寸法精度向上のための処理。", note: "現行JISに該当なし。旧規格+加工区分の表記。" },
+  { code: "SS490", name: "一般構造用圧延鋼材(490級)", jis: "JIS G 3101", en: "Steel Structural (490 N/mm²級)", category: "一般構造用", feature: "SS400より高強度な構造用鋼。引張強さ490〜610 N/mm²。やや高強度が必要な箇所に使用。", note: "建築構造用としてはSN490Bが推奨される。" },
+  { code: "SS540", name: "一般構造用圧延鋼材(540級)", jis: "JIS G 3101", en: "Steel Structural (540 N/mm²級)", category: "一般構造用", feature: "SS材で最高強度の規格。引張強さ540 N/mm²以上。溶接性に劣るため、溶接構造には推奨されない。", note: "溶接非適用箇所の高強度部材に限定使用。" },
+
+  // ===== 鋼板(熱延) =====
+  { code: "SPHC", name: "熱間圧延軟鋼板及び鋼帯", jis: "JIS G 3131", en: "Steel Plate Hot-rolled Commercial", category: "鋼板(熱延)", feature: "熱間圧延された一般用途の軟鋼板。表面に黒皮(スケール)が残る。加工性は良いが寸法精度・表面性状はSPCC等より劣る。曲げ・絞り加工に使用。", note: "Hは Hot-rolled、Cは Commercial(一般用)を意味する。" },
+  { code: "SPHD", name: "熱間圧延軟鋼板及び鋼帯", jis: "JIS G 3131", en: "Steel Plate Hot-rolled Drawing", category: "鋼板(熱延)", feature: "SPHCより加工性の良い熱延鋼板。絞り(Drawing)用途向け。", note: "DはDrawing(絞り)。" },
+  { code: "SPHE", name: "熱間圧延軟鋼板及び鋼帯", jis: "JIS G 3131", en: "Steel Plate Hot-rolled deep drawing (Extra)", category: "鋼板(熱延)", feature: "深絞り加工用の熱延軟鋼板。SPHDよりさらに加工性が高い。", note: "EはExtra(深絞り)。" },
+
+  // ===== 鋼板(冷延) =====
+  { code: "SPCC", name: "冷間圧延鋼板及び鋼帯", jis: "JIS G 3141", en: "Steel Plate Cold-rolled Commercial", category: "鋼板(冷延)", feature: "冷間圧延された一般用途の鋼板。表面が滑らかで寸法精度が高い。塗装・メッキの下地として優れる。家電・自動車・建材など幅広く使用。", note: "Cは Cold-rolled、Cは Commercial(一般用)を意味する。" },
+  { code: "SPCD", name: "冷間圧延鋼板及び鋼帯(絞り用)", jis: "JIS G 3141", en: "Steel Plate Cold-rolled Drawing", category: "鋼板(冷延)", feature: "絞り加工用の冷延鋼板。SPCCより加工性が良く、深絞りに適する。", note: "DはDrawing。" },
+  { code: "SPCE", name: "冷間圧延鋼板及び鋼帯(深絞り用)", jis: "JIS G 3141", en: "Steel Plate Cold-rolled deep drawing (Extra)", category: "鋼板(冷延)", feature: "深絞り加工専用の冷延鋼板。複雑形状の絞り加工に対応。", note: "EはExtra(極絞り)。" },
+
+  // ===== メッキ鋼板 =====
+  { code: "SGHC", name: "溶融亜鉛メッキ鋼板及び鋼帯", jis: "JIS G 3302", en: "Steel Galvanized Hot-rolled Commercial", category: "メッキ鋼板", feature: "熱間圧延鋼板に溶融亜鉛メッキ(ドブメッキ)を施したもの。耐食性に優れ、屋外・湿潤環境で使用される。", note: "Gは Galvanized(亜鉛メッキ)。母材が熱延のためSGHC。" },
+  { code: "SGCC", name: "溶融亜鉛メッキ鋼板及び鋼帯", jis: "JIS G 3302", en: "Steel Galvanized Cold-rolled Commercial", category: "メッキ鋼板", feature: "冷間圧延鋼板に溶融亜鉛メッキを施したもの。SGHCより表面性状が良く、塗装下地・精密板金に使用。エレベーター内装板金で多用。", note: "母材が冷延のためSGCC。", star: true },
+  { code: "SGCD1", name: "溶融亜鉛メッキ鋼板(絞り用1種)", jis: "JIS G 3302", en: "Steel Galvanized Cold-rolled Drawing 1", category: "メッキ鋼板", feature: "絞り加工用の溶融亜鉛メッキ鋼板。SGCCより加工性が良い。", note: "数字が大きいほど深絞り対応。" },
+  { code: "SGCD3", name: "溶融亜鉛メッキ鋼板(絞り用3種)", jis: "JIS G 3302", en: "Steel Galvanized Cold-rolled Drawing 3", category: "メッキ鋼板", feature: "深絞り加工用の溶融亜鉛メッキ鋼板。複雑な絞り形状に対応。", note: "SGCD1〜3の中で最も加工性が高い。" },
+  { code: "SECC", name: "電気亜鉛メッキ鋼板及び鋼帯", jis: "JIS G 3313", en: "Steel Electrolytic Cold-rolled Commercial", category: "メッキ鋼板", feature: "冷間圧延鋼板に電気亜鉛メッキを施したもの。メッキ層が薄く均一で、表面平滑性が高い。塗装性・溶接性が良く、制御盤・筐体に多用される。", note: "Eは Electrolytic(電気メッキ)。SGCCより薄メッキで、より美麗な表面が得られる。", star: true },
+  { code: "SECD", name: "電気亜鉛メッキ鋼板(絞り用)", jis: "JIS G 3313", en: "Steel Electrolytic Cold-rolled Drawing", category: "メッキ鋼板", feature: "絞り加工用の電気亜鉛メッキ鋼板。SECCより加工性が良い。", note: "" },
+
+  // ===== 高耐食メッキ =====
+  { code: "SGLCC", name: "溶融55%Al-Zn合金メッキ鋼板", jis: "JIS G 3321", en: "Galvalume Cold-rolled Commercial", category: "高耐食メッキ", feature: "アルミ55%・亜鉛43.4%・シリコン1.6%のメッキ。SGCCの3〜6倍の耐食性。建材・屋根材に多用。ガルバリウム鋼板として知られる。", note: "GLはGalvalume(ガルバリウム)。日鉄日新製鋼の登録商標が一般化。" },
+  { code: "SGLHC", name: "溶融55%Al-Zn合金メッキ鋼板(熱延)", jis: "JIS G 3321", en: "Galvalume Hot-rolled Commercial", category: "高耐食メッキ", feature: "熱延母材のガルバリウム鋼板。", note: "" },
+  { code: "ZAM", name: "溶融Zn-Al-Mg合金メッキ鋼板", jis: "JIS G 3323", en: "Zinc Aluminium Magnesium alloy coated", category: "高耐食メッキ", feature: "亜鉛・6%アルミ・3%マグネシウムの合金メッキ。亜鉛メッキの10〜20倍の耐食性。切断端面でも自己修復作用あり。日鉄鋼板の登録商標。", note: "業界通称・商品名。同等品にニスクカラーGL(日新製鋼)など。", brand: true },
+  { code: "SZACC", name: "溶融Zn-Al-Mg合金メッキ鋼板(JIS)", jis: "JIS G 3323", en: "Zinc Aluminium Magnesium Cold-rolled Commercial", category: "高耐食メッキ", feature: "ZAM相当品のJIS規格化された名称。高耐食メッキ鋼板の代表格。", note: "JIS規格上の正式名称。" },
+  { code: "SuperDyma", name: "溶融Zn-Al-Mg-Si合金メッキ鋼板", jis: "メーカー独自規格", en: "Super Dyma", category: "高耐食メッキ", feature: "亜鉛・11%アルミ・3%マグネシウム・0.2%シリコンの合金メッキ。ZAMよりさらに高耐食。日鉄(旧新日鐵住金)の商品名。", note: "メーカー商品名。屋外設備・太陽光架台等に使用。", brand: true },
+
+  // ===== 塗装鋼板 =====
+  { code: "CGCC", name: "塗装溶融亜鉛メッキ鋼板", jis: "JIS G 3312", en: "Color Galvanized Cold-rolled Commercial", category: "塗装鋼板", feature: "溶融亜鉛メッキ鋼板に塗装を施したカラー鋼板。屋根材・外壁材として広く使用。", note: "CはColor(塗装)。" },
+  { code: "CGLCC", name: "塗装溶融55%Al-Zn合金メッキ鋼板", jis: "JIS G 3322", en: "Color Galvalume Cold-rolled Commercial", category: "塗装鋼板", feature: "ガルバリウム鋼板に塗装を施したもの。高耐食+意匠性。", note: "外装材で多用。" },
+
+  // ===== 棒鋼 =====
+  { code: "SGDB", name: "磨き棒鋼用一般鋼材", jis: "JIS G 3108・3123", en: "Steel General Deformed Bar", category: "棒鋼", feature: "磨き棒鋼用の一般鋼材。G3108が一般用、G3123が機械構造用の素材規格。引抜き・研削仕上げで寸法精度を確保。", note: "シャフト・軸・ピン等の機械部品素材として使用。" },
+  { code: "SGD400", name: "磨き棒鋼用一般鋼材", jis: "JIS G 3507-2", en: "Steel General Deformed (400 N/mm²級)", category: "棒鋼", feature: "みがき棒鋼用一般鋼材のうち、引張強さ400 N/mm²級。寸法精度が高く、機械加工の素材に適する。", note: "JIS G 3507-2 みがき棒鋼用一般鋼材で規定。" },
+  { code: "SGD400-D", name: "磨き棒鋼用一般鋼材(引抜き材)", jis: "なし(加工後通称)", en: "Steel General Deformed - Drawn", category: "棒鋼", feature: "SGD400を冷間引抜き加工で仕上げた状態。寸法公差が厳しく、機械加工の素材として優れる。", note: "JIS規格上のグレードではなく、加工状態を示す通称。" },
+  { code: "SGD290", name: "磨き棒鋼用一般鋼材(290級)", jis: "JIS G 3507-2", en: "Steel General Deformed (290 N/mm²級)", category: "棒鋼", feature: "SGDの低強度級。加工性重視の素材。", note: "" },
+
+  // ===== 形鋼 =====
+  { code: "SSC400", name: "リップ溝形鋼(一般構造用軽量形鋼)", jis: "JIS G 3350", en: "Light Gauge Steels for general Structure (LGS)", category: "形鋼", feature: "薄板を冷間ロール成形した軽量形鋼。Cチャンネル形状で、内装下地・軽量構造材として使用。LGS(Light Gauge Steel)と通称される。", note: "「リップ」は溝形鋼の開口部に内側に折り返した部分のこと。" },
+
+  // ===== 炭素鋼(機械構造用) =====
+  { code: "S15C", name: "機械構造用炭素鋼鋼材", jis: "JIS G 4051", en: "Carbon Steel 0.15%C", category: "炭素鋼", feature: "炭素含有量0.13〜0.18%の低炭素鋼。溶接性に優れ、肌焼き(浸炭焼入れ)用素材として使用。", note: "ピン・小径シャフトの肌焼き品で使用。" },
+  { code: "S25C", name: "機械構造用炭素鋼鋼材", jis: "JIS G 4051", en: "Carbon Steel 0.25%C", category: "炭素鋼", feature: "炭素0.22〜0.28%。溶接性と加工性のバランスが良く、軽荷重の機械部品に使用。", note: "" },
+  { code: "S35C", name: "機械構造用炭素鋼鋼材", jis: "JIS G 4051", en: "Carbon Steel 0.35%C", category: "炭素鋼", feature: "炭素0.32〜0.38%。中炭素鋼。シャフト・ボルト・歯車等に使用。焼入れ可能。", note: "" },
+  { code: "S45C", name: "機械構造用炭素鋼鋼材", jis: "JIS G 4051", en: "Carbon Steel 0.45%C", category: "炭素鋼", feature: "炭素0.42〜0.48%。機械構造用炭素鋼の代表格。シャフト・ボルト・キー・ピン・歯車など最も汎用的に使用。焼入れ・焼戻しで強度調整可能。", note: "「エスヨンゴ」と呼ばれ機械部品で最も使用頻度が高い炭素鋼。", star: true },
+  { code: "S50C", name: "機械構造用炭素鋼鋼材", jis: "JIS G 4051", en: "Carbon Steel 0.50%C", category: "炭素鋼", feature: "炭素0.47〜0.53%。S45Cより硬く、より高強度が必要な部品に。", note: "" },
+  { code: "S55C", name: "機械構造用炭素鋼鋼材", jis: "JIS G 4051", en: "Carbon Steel 0.55%C", category: "炭素鋼", feature: "炭素0.52〜0.58%。高炭素・高強度。靱性は低下するが硬さ重視の部品に。", note: "" },
+
+  // ===== 合金鋼 =====
+  { code: "SCM435", name: "クロムモリブデン鋼", jis: "JIS G 4053", en: "Chromium Molybdenum Steel", category: "合金鋼", feature: "Cr(1%前後)とMo(0.2%)を含む合金鋼。S45Cより高強度・高靱性。高張力ボルト・シャフト・ギアに使用。焼入れ性が良い。", note: "クロモリ鋼と通称。", star: true },
+  { code: "SCM440", name: "クロムモリブデン鋼", jis: "JIS G 4053", en: "Chromium Molybdenum Steel (high C)", category: "合金鋼", feature: "SCM435より炭素量が多く高強度。重要保安部品・高負荷シャフト等に使用。", note: "" },
+  { code: "SCr420", name: "クロム鋼(肌焼き用)", jis: "JIS G 4053", en: "Chromium Steel", category: "合金鋼", feature: "クロム含有の低炭素鋼。浸炭焼入れ(肌焼き)で表面硬化させる用途。歯車・カム・シャフト等。", note: "" },
+  { code: "SNCM439", name: "ニッケルクロムモリブデン鋼", jis: "JIS G 4053", en: "Nickel Chromium Molybdenum Steel", category: "合金鋼", feature: "Ni・Cr・Mo含有の最高級機械構造用合金鋼。高強度・高靱性。航空機部品・重機の重要部材に使用。", note: "高価。" },
+  { code: "SNCM630", name: "ニッケルクロムモリブデン鋼(高強度)", jis: "JIS G 4053", en: "NiCrMo Steel (high strength)", category: "合金鋼", feature: "SNCM材中で最高強度。極限状態の重要保安部品に使用。", note: "" },
+
+  // ===== ステンレス(SUS) =====
+  { code: "SUS304", name: "オーステナイト系ステンレス鋼", jis: "JIS G 4304/4305", en: "18Cr-8Ni Austenitic Stainless Steel", category: "ステンレス", feature: "18%Cr-8%Niの代表的ステンレス。耐食性・加工性・溶接性に優れる。非磁性。厨房・建築・化学プラントなど幅広く使用。", note: "「サスサンマルヨン」。18-8ステンレスとも呼ばれる最も普及した銘柄。", star: true },
+  { code: "SUS304L", name: "低炭素オーステナイト系ステンレス", jis: "JIS G 4304/4305", en: "18Cr-8Ni Low Carbon", category: "ステンレス", feature: "SUS304の低炭素版(C≦0.030%)。溶接部の鋭敏化(粒界腐食)を防止。溶接構造物に推奨。", note: "L=Low carbon。" },
+  { code: "SUS316", name: "Mo添加オーステナイト系ステンレス", jis: "JIS G 4304/4305", en: "18Cr-12Ni-2.5Mo Austenitic", category: "ステンレス", feature: "SUS304にモリブデン2〜3%を添加。耐塩水性・耐孔食性が大幅向上。海岸沿い・化学プラントで使用。", note: "Mo添加でMolybdenum-bearing。" },
+  { code: "SUS316L", name: "低炭素Mo添加ステンレス", jis: "JIS G 4304/4305", en: "18Cr-12Ni-2.5Mo Low Carbon", category: "ステンレス", feature: "SUS316の低炭素版。溶接構造の耐食性確保。医療機器・食品設備にも使用。", note: "" },
+  { code: "SUS301", name: "ばね用オーステナイト系ステンレス", jis: "JIS G 4313", en: "Spring Stainless Steel", category: "ステンレス", feature: "冷間加工により高強度化されたオーステナイト系。ばね・薄板の高強度部材に使用。", note: "" },
+  { code: "SUS430", name: "フェライト系ステンレス鋼", jis: "JIS G 4304/4305", en: "18Cr Ferritic Stainless Steel", category: "ステンレス", feature: "18%Crのみのフェライト系。Niフリーで安価。磁性あり。SUS304より耐食性は劣るが、家電・キッチン用途で広く使用。", note: "磁石につく。SUS304と外観で判別困難。" },
+  { code: "SUS410", name: "マルテンサイト系ステンレス", jis: "JIS G 4303", en: "Martensitic Stainless Steel", category: "ステンレス", feature: "13%Crのマルテンサイト系。焼入れにより硬化可能。刃物・タービンブレード等に使用。磁性あり。", note: "" },
+  { code: "SUS440C", name: "高炭素マルテンサイト系ステンレス", jis: "JIS G 4303", en: "High Carbon Martensitic Stainless", category: "ステンレス", feature: "SUS440系中で最高炭素量。焼入れで高硬度(HRC58以上)。ベアリング・刃物・金型に使用。", note: "" },
+  { code: "SUS329J", name: "二相系ステンレス鋼", jis: "JIS G 4304/4305", en: "Duplex Stainless Steel", category: "ステンレス", feature: "オーステナイト+フェライトの二相組織。高強度かつ高耐食。化学プラント・海水環境で使用。", note: "デュプレックス鋼。" },
+
+  // ===== NSSC材(日鉄ステンレス) =====
+  { code: "NSSC 190", name: "汎用フェライト系ステンレス", jis: "メーカー独自規格(JIS相当)", en: "Nippon Steel Stainless Corporation 190", category: "NSSC材", feature: "SUS430相当の改良型フェライト系。耐食性・加工性をバランス。汎用ステンレスとして安価に使用可能。", note: "日鉄ステンレスのメーカー独自鋼種。", brand: true },
+  { code: "NSSC FW1", name: "節Niフェライト系ステンレス", jis: "メーカー独自規格", en: "NSSC FW1 (Ni-saving Ferritic)", category: "NSSC材", feature: "SUS304代替の節ニッケル(Niフリー)フェライト系。コスト低減と一定の耐食性を両立。建築・厨房機器で代替使用。", note: "Niフリーで価格安定性が高い。", brand: true },
+  { code: "NSSC FW2", name: "高耐食フェライト系ステンレス", jis: "メーカー独自規格", en: "NSSC FW2 (High Corrosion Resistance)", category: "NSSC材", feature: "FW1より耐食性を強化したフェライト系。SUS304相当の耐食性を持ちつつNiフリー。", note: "", brand: true },
+  { code: "NSSC 180", name: "高耐食フェライト系ステンレス", jis: "メーカー独自規格", en: "NSSC 180 (High Corrosion Ferritic)", category: "NSSC材", feature: "屋外環境での耐食性を強化したフェライト系。建材外装等で使用。", note: "", brand: true },
+  { code: "NSSC 304J3", name: "低Niオーステナイト系ステンレス", jis: "メーカー独自規格", en: "NSSC 304J3 (Low Ni Austenitic)", category: "NSSC材", feature: "SUS304の低Ni版。Niコスト変動の影響を低減しつつオーステナイト系の特性を確保。", note: "", brand: true },
+  { code: "NSSC 21", name: "二相系ステンレス鋼", jis: "メーカー独自規格", en: "NSSC 21 (Lean Duplex)", category: "NSSC材", feature: "リーンデュプレックス(節合金二相系)。SUS304より高強度・高耐食。コスト性能比に優れる。", note: "海水・塩害環境で使用。", brand: true },
+
+  // ===== 工具鋼 =====
+  { code: "SK85", name: "炭素工具鋼", jis: "JIS G 4401", en: "Carbon Tool Steel 0.85%C", category: "工具鋼", feature: "炭素0.80〜0.90%。旧JIS表記ではSK5。刃物・木工工具・ばね等に使用。焼入れで高硬度化。", note: "2008年JIS改正でSK5→SK85に名称変更。" },
+  { code: "SKD11", name: "冷間ダイス鋼", jis: "JIS G 4404", en: "Cold-work Die Steel", category: "工具鋼", feature: "高Cr(12%)高炭素の冷間金型用工具鋼。耐摩耗性・耐圧縮性に優れ、プレス金型・打抜き金型・ロールに使用。", note: "金型材の代表格。", star: true },
+  { code: "SKD61", name: "熱間ダイス鋼", jis: "JIS G 4404", en: "Hot-work Die Steel", category: "工具鋼", feature: "熱間金型用工具鋼。高温強度・耐ヒートクラック性に優れる。ダイカスト金型・熱間鍛造金型に使用。", note: "" },
+  { code: "SKH51", name: "高速度工具鋼(ハイス)", jis: "JIS G 4403", en: "High Speed Steel (M2 equivalent)", category: "工具鋼", feature: "W・Mo・V・Crを含む高速度工具鋼。高温下でも硬度を維持。ドリル・タップ・エンドミル・バイト等の切削工具に使用。", note: "ハイス、HSS。M2鋼相当。" },
+  { code: "SKS3", name: "合金工具鋼(耐衝撃用)", jis: "JIS G 4404", en: "Alloy Tool Steel (Shock Resistant)", category: "工具鋼", feature: "焼入性が良く、耐摩耗性のある合金工具鋼。ゲージ・ねじ切りダイス・冷間鍛造工具等。", note: "" },
+
+  // ===== ばね鋼 =====
+  { code: "SUP6", name: "シリコンマンガン鋼ばね材", jis: "JIS G 4801", en: "Silicon Manganese Spring Steel", category: "ばね鋼", feature: "Si-Mn系のばね鋼。重ね板ばね・コイルばねに使用。", note: "" },
+  { code: "SUP9", name: "マンガンクロム鋼ばね材", jis: "JIS G 4801", en: "Manganese Chromium Spring Steel", category: "ばね鋼", feature: "Mn-Cr系のばね鋼。SUP6より高強度。自動車サスペンション等に使用。", note: "" },
+  { code: "SUP10", name: "クロムバナジウム鋼ばね材", jis: "JIS G 4801", en: "Chromium Vanadium Spring Steel", category: "ばね鋼", feature: "Cr-V系の高級ばね鋼。耐疲労性に優れ、高負荷ばねに使用。", note: "" },
+
+  // ===== 鋼管 =====
+  { code: "STKM11A", name: "機械構造用炭素鋼鋼管", jis: "JIS G 3445", en: "Carbon Steel Tubes for Machine Structural Purposes", category: "鋼管", feature: "機械構造用の継目無/電縫鋼管。シリンダー・ローラー・機械部品の素材として使用。", note: "" },
+  { code: "STKM13A", name: "機械構造用炭素鋼鋼管(高強度)", jis: "JIS G 3445", en: "Carbon Steel Tubes for Machine (high strength)", category: "鋼管", feature: "STKM11Aより高強度な機械構造用鋼管。油圧シリンダー・自動車部品等。", note: "" },
+  { code: "STKR400", name: "一般構造用角形鋼管", jis: "JIS G 3466", en: "Square/Rectangular Steel Tubes for general Structure", category: "鋼管", feature: "角形(□)・長方形(▭)断面の鋼管。建築構造材・機械フレーム・架台に使用。", note: "Rは Rectangular(角形)。" },
+  { code: "STK400", name: "一般構造用炭素鋼鋼管", jis: "JIS G 3444", en: "Carbon Steel Tubes for general Structure", category: "鋼管", feature: "円形断面の一般構造用鋼管。鉄塔・支柱・架台・足場等に使用。", note: "" },
+  { code: "STK490", name: "一般構造用炭素鋼鋼管(高強度)", jis: "JIS G 3444", en: "Carbon Steel Tubes for general Structure (490級)", category: "鋼管", feature: "STK400より高強度な一般構造用鋼管。", note: "" },
+  { code: "SGP", name: "配管用炭素鋼鋼管", jis: "JIS G 3452", en: "Carbon Steel Pipes for ordinary Piping", category: "鋼管", feature: "蒸気・水・油・ガス・空気等の配管に使用。低圧用途向け。「ガス管」とも呼ばれる。黒管(無メッキ)と白管(亜鉛メッキ)がある。", note: "" },
+
+  // ===== 鋳鉄 =====
+  { code: "FC200", name: "ねずみ鋳鉄品", jis: "JIS G 5501", en: "Grey Cast Iron (200 N/mm²級)", category: "鋳鉄", feature: "片状黒鉛を持つねずみ鋳鉄。引張強さ200 N/mm²以上。機械フレーム・工作機械ベッド・滑車等に使用。振動吸収性が良い。", note: "「FC」はFerrum Casting(鉄鋳造)。" },
+  { code: "FC250", name: "ねずみ鋳鉄品", jis: "JIS G 5501", en: "Grey Cast Iron (250 N/mm²級)", category: "鋳鉄", feature: "FC200より高強度。汎用鋳鉄品の標準的グレード。", note: "" },
+  { code: "FC300", name: "ねずみ鋳鉄品", jis: "JIS G 5501", en: "Grey Cast Iron (300 N/mm²級)", category: "鋳鉄", feature: "高強度ねずみ鋳鉄。エンジンブロック・大型機械部品等。", note: "" },
+  { code: "FCD400", name: "球状黒鉛鋳鉄品(ダクタイル鋳鉄)", jis: "JIS G 5502", en: "Spheroidal Graphite Cast Iron (400)", category: "鋳鉄", feature: "黒鉛が球状化された鋳鉄。FC材より高強度・高靱性。鋳鋼に近い性質。マンホール蓋・自動車部品・水道管等。", note: "ダクタイル(ductile=延性のある)鋳鉄、ノジュラー鋳鉄とも。" },
+  { code: "FCD450", name: "球状黒鉛鋳鉄品", jis: "JIS G 5502", en: "Spheroidal Graphite Cast Iron (450)", category: "鋳鉄", feature: "ダクタイル鋳鉄の標準グレード。", note: "" },
+  { code: "FCD500", name: "球状黒鉛鋳鉄品", jis: "JIS G 5502", en: "Spheroidal Graphite Cast Iron (500)", category: "鋳鉄", feature: "高強度ダクタイル鋳鉄。", note: "" },
+
+  // ===== 日立エレベーター機種情報 =====
+  { code: "VF-CM", name: "日立エレベーター 制御リニューアル(B86制御モデル)", jis: "メーカー機種", en: "Hitachi VF-CM Control Renewal", category: "日立EV機種", feature: "1986〜2003年生産の日立製エレベーター用 制御リニューアル機種。B86制御モデル。インバーター制御方式。部品供給期限は2027年12月まで(在庫状況により早まる可能性あり)。", note: "公開資料(日立ビルシステム部品供給停止のお知らせ 2025年12月)に基づく。具体的な使用鋼材は社内情報として別途追記。", hitachi: true, star: true },
+  { code: "VF-CM2", name: "日立エレベーター 制御リニューアル(B95制御モデル)", jis: "メーカー機種", en: "Hitachi VF-CM2 Control Renewal", category: "日立EV機種", feature: "VF-CMの後継機。B95制御モデル。インバーター制御方式。部品供給期限は2027年12月まで。", note: "公開資料に基づく。具体的な使用鋼材は社内情報として別途追記。", hitachi: true, star: true },
+  { code: "G_Select", name: "日立エレベーター リニューアル G_Select", jis: "メーカー機種", en: "Hitachi G_Select Renewal", category: "日立EV機種", feature: "2012年12月発売の制御リニューアル商品。最新インバーター式制御盤と二重ブレーキ搭載巻上機への取り換えを行う。戸開走行保護装置が標準装備、LED照明採用で省エネ化。", note: "公開資料(日立ビルシステム製品情報、日立評論Vol.98)に基づく。", hitachi: true, star: true },
+  { code: "G_Select Select1", name: "G_Select 基本メニュー", jis: "メーカー機種", en: "G_Select Menu 1", category: "日立EV機種", feature: "巻上機・制御盤・モーターを最新型に取り換える基本メニュー。ギヤレス巻上機への交換で戸開走行保護装置が標準装備。前側板・天枠・操作盤・インジケーターを交換、天井照明をLEDに改修。", note: "既設のかごを活用するメニュー構成。公開資料に基づく。", hitachi: true },
+  { code: "G_Select Select2", name: "G_Select セレクトメニュー", jis: "メーカー機種", en: "G_Select Menu 2", category: "日立EV機種", feature: "Select1の内容に加え、各種地震対策、ドアセンサー設置、最新インジケーター・かご天井への取り換え等のセレクトメニュー。", note: "公開資料に基づく。", hitachi: true },
+  { code: "G_Select Select3", name: "G_Select デザインリニューアル", jis: "メーカー機種", en: "G_Select Menu 3", category: "日立EV機種", feature: "Select2に加え、天井デザイン、かご内側板など主にかご内のデザイン性を向上、ドア開閉装置を交換するメニュー。", note: "公開資料に基づく。", hitachi: true }
+];
+
+// 各データに freeImages 空配列を追加
+DATA.forEach(d => { if (!d.freeImages) d.freeImages = []; });
+
+// ============================================
+// ストレージキー
+// ============================================
+const LS_USER_DATA = "steel_user_data_v1";
+const LS_USER_PHOTOS = "steel_user_photos_v1";
+const LS_REF_PHOTOS = "steel_ref_photos_v1";
+const LS_FORM_URL = "steel_form_url_v1";
+const LS_STARS = "steel_stars_v1";
+
+// ============================================
+// 状態
+// ============================================
+let currentFilter = "すべて";
+let currentSearch = "";
+let userData = [];
+let userPhotos = {};
+let refPhotos = {};
+let formUrl = "";
+let stars = {};
+
+// ============================================
+// 初期化
+// ============================================
+function loadState() {
+  try {
+    userData = JSON.parse(localStorage.getItem(LS_USER_DATA) || "[]");
+    userPhotos = JSON.parse(localStorage.getItem(LS_USER_PHOTOS) || "{}");
+    refPhotos = JSON.parse(localStorage.getItem(LS_REF_PHOTOS) || "{}");
+    formUrl = localStorage.getItem(LS_FORM_URL) || "";
+    stars = JSON.parse(localStorage.getItem(LS_STARS) || "{}");
+    // 初期星をデータ定義から反映
+    DATA.forEach(d => {
+      if (d.star && stars[d.code] === undefined) stars[d.code] = true;
+    });
+    saveStars();
+  } catch(e) {
+    console.error("状態読み込みエラー", e);
+    userData = [];
+    userPhotos = {};
+    refPhotos = {};
+    stars = {};
+  }
+}
+
+function saveUserData() {
+  localStorage.setItem(LS_USER_DATA, JSON.stringify(userData));
+}
+
+function saveUserPhotos() {
+  try {
+    localStorage.setItem(LS_USER_PHOTOS, JSON.stringify(userPhotos));
+  } catch(e) {
+    showToast("写真の保存に失敗(容量超過の可能性)");
+    return false;
+  }
+  return true;
+}
+
+function saveRefPhotos() {
+  try {
+    localStorage.setItem(LS_REF_PHOTOS, JSON.stringify(refPhotos));
+  } catch(e) {
+    showToast("参考画像の保存に失敗(容量超過の可能性)");
+    return false;
+  }
+  return true;
+}
+
+function saveStars() {
+  localStorage.setItem(LS_STARS, JSON.stringify(stars));
+}
+
+function getAllData() {
+  return [...DATA, ...userData];
+}
+
+// ============================================
+// フィルタ描画
+// ============================================
+function renderFilters() {
+  const builtIn = ["すべて", ...new Set(DATA.map(d => d.category))];
+  const userCats = [...new Set(userData.map(d => d.category))].filter(c => !builtIn.includes(c));
+  const allCats = [...builtIn, ...userCats];
+
+  const wrap = document.getElementById("filters");
+  wrap.innerHTML = "";
+
+  // ★お気に入りフィルタを最初に
+  const starCount = Object.values(stars).filter(v => v).length;
+  if (starCount > 0) {
+    const btn = document.createElement("button");
+    btn.className = "filter-chip star-tag" + (currentFilter === "__star__" ? " active" : "");
+    btn.innerHTML = `★ よく使う (${starCount})`;
+    btn.onclick = () => {
+      currentFilter = "__star__";
+      renderFilters();
+      renderCards();
+    };
+    wrap.appendChild(btn);
+  }
+
+  allCats.forEach(cat => {
+    const btn = document.createElement("button");
+    const isUser = !builtIn.includes(cat);
+    const isHitachi = cat === "日立EV機種";
+    btn.className = "filter-chip" +
+      (cat === currentFilter ? " active" : "") +
+      (isUser ? " user-tag" : "") +
+      (isHitachi ? " hitachi-tag" : "");
+    btn.textContent = cat;
+    btn.onclick = () => {
+      currentFilter = cat;
+      renderFilters();
+      renderCards();
+    };
+    wrap.appendChild(btn);
+  });
+
+  // 仮追加のみフィルタ
+  if (userData.length > 0) {
+    const btn = document.createElement("button");
+    btn.className = "filter-chip user-tag" + (currentFilter === "__user__" ? " active" : "");
+    btn.textContent = `仮追加 (${userData.length})`;
+    btn.onclick = () => {
+      currentFilter = "__user__";
+      renderFilters();
+      renderCards();
+    };
+    wrap.appendChild(btn);
+  }
+}
+
+// ============================================
+// カード描画
+// ============================================
+function renderCards() {
+  const wrap = document.getElementById("cards");
+  const q = currentSearch.toLowerCase().trim();
+  const all = getAllData();
+
+  const filtered = all.filter(d => {
+    let matchCat;
+    if (currentFilter === "すべて") matchCat = true;
+    else if (currentFilter === "__user__") matchCat = d._user === true;
+    else if (currentFilter === "__star__") matchCat = stars[d.code] === true;
+    else matchCat = d.category === currentFilter;
+
+    const matchQ = !q ||
+      d.code.toLowerCase().includes(q) ||
+      d.name.toLowerCase().includes(q) ||
+      d.jis.toLowerCase().includes(q) ||
+      (d.en || "").toLowerCase().includes(q) ||
+      (d.feature || "").toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+
+  document.getElementById("count").textContent = filtered.length;
+  document.getElementById("filterLabel").textContent =
+    currentFilter === "すべて" ? "— all —" :
+    currentFilter === "__user__" ? "— user added —" :
+    currentFilter === "__star__" ? "— favorites —" :
+    `— ${currentFilter} —`;
+
+  if (filtered.length === 0) {
+    wrap.innerHTML = `
+      <div class="empty">
+        <div class="empty-mark">∅</div>
+        <div>該当する鋼材が見つかりません</div>
+      </div>`;
+    return;
+  }
+
+  wrap.innerHTML = filtered.map((d) => {
+    const idx = all.indexOf(d);
+    const isStarred = stars[d.code] === true;
+    let jisClass = "";
+    if (d.hitachi) jisClass = "maker";
+    else if (d._user) jisClass = "user";
+    else if (d.jis && d.jis.includes("なし")) jisClass = "none";
+    else if (d.jis && d.jis.includes("メーカー独自")) jisClass = "maker";
+
+    let tags = '';
+    if (d._user) tags += '<span class="tag user-tag">TEMP</span>';
+    if (d.hitachi) tags += '<span class="tag maker-tag">HITACHI</span>';
+    if (d.brand) tags += '<span class="tag brand-tag">BRAND</span>';
+
+    return `
+      <div class="card ${d._user ? 'user-added' : ''} ${d.hitachi ? 'hitachi-card' : ''}" data-idx="${idx}">
+        <button class="card-star ${isStarred ? 'active' : ''}" data-code="${escapeHtml(d.code)}">${isStarred ? '★' : '☆'}</button>
+        <div class="card-head">
+          <span class="card-code">${escapeHtml(d.code)}</span>
+          <span class="card-jis ${jisClass}">${escapeHtml(d.jis || "—")}</span>
+        </div>
+        <div class="card-name">${escapeHtml(d.name)}</div>
+        <div class="card-en">${escapeHtml(d.en || "")}</div>
+        ${tags ? `<div class="card-tags">${tags}</div>` : ''}
+      </div>
+    `;
+  }).join("");
+
+  wrap.querySelectorAll(".card").forEach(card => {
+    card.onclick = (e) => {
+      if (e.target.classList.contains("card-star")) return;
+      openDetail(parseInt(card.dataset.idx));
+    };
+  });
+
+  wrap.querySelectorAll(".card-star").forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const code = btn.dataset.code;
+      stars[code] = !stars[code];
+      if (!stars[code]) delete stars[code];
+      saveStars();
+      renderFilters();
+      renderCards();
+    };
+  });
+}
+
+// ============================================
+// 詳細モーダル
+// ============================================
+let currentDetailIdx = -1;
+
+function openDetail(idx) {
+  const all = getAllData();
+  const d = all[idx];
+  if (!d) return;
+  currentDetailIdx = idx;
+
+  document.getElementById("modalCode").textContent = d.code;
+  document.getElementById("deleteBtn").style.display = d._user ? "block" : "none";
+
+  const isStarred = stars[d.code] === true;
+  const starBtn = document.getElementById("modalStar");
+  starBtn.textContent = isStarred ? "★" : "☆";
+  starBtn.classList.toggle("active", isStarred);
+
+  const photos = userPhotos[d.code] || [];
+  const refs = refPhotos[d.code] || [];
+
+  let bodyHtml = '';
+
+  // 日立バナー
+  if (d.hitachi) {
+    bodyHtml += `<div class="hitachi-banner">HITACHI ELEVATOR — 日立エレベーター機種情報</div>`;
+  }
+
+  // 写真ギャラリー(2段)
+  bodyHtml += '<div class="gallery">';
+
+  // 1段目: 参考画像
+  bodyHtml += `
+    <div class="gallery-row">
+      <div class="gallery-label">
+        <span>① 参考画像 / Reference</span>
+        <span style="font-family:inherit;font-size:11px;color:var(--ink-faint);text-transform:none;letter-spacing:0;">${refs.length}枚</span>
+      </div>
+      <div class="gallery-content">
+        ${refs.length === 0 && !d._user ? '<div class="gallery-empty">参考画像はまだ登録されていません</div>' : ''}
+        ${refs.map((p, i) => `
+          <div class="photo-thumb">
+            <img src="${p}" data-fullimg="${p}">
+            <button class="del" data-refidx="${i}">×</button>
+          </div>
+        `).join('')}
+        <button class="add-photo" id="addRefBtn">
+          <span>🖼</span>
+          <span>追加</span>
+        </button>
+      </div>
+    </div>`;
+
+  // 2段目: 現場撮影
+  bodyHtml += `
+    <div class="gallery-row">
+      <div class="gallery-label">
+        <span>② 現場撮影 / Field photo</span>
+        <span style="font-family:inherit;font-size:11px;color:var(--ink-faint);text-transform:none;letter-spacing:0;">${photos.length}枚</span>
+      </div>
+      <div class="gallery-content">
+        ${photos.length === 0 ? '<div class="gallery-empty">撮影した写真がここに表示されます</div>' : ''}
+        ${photos.map((p, i) => `
+          <div class="photo-thumb">
+            <img src="${p}" data-fullimg="${p}">
+            <button class="del" data-photoidx="${i}">×</button>
+          </div>
+        `).join('')}
+        <button class="add-photo" id="addPhotoBtn">
+          <span>📷</span>
+          <span>撮影</span>
+        </button>
+      </div>
+    </div>`;
+
+  bodyHtml += '</div>';
+
+  // フィールド
+  bodyHtml += `
+    <div class="field">
+      <span class="field-label">名称 / Japanese name</span>
+      <div class="field-value">${escapeHtml(d.name)}</div>
+    </div>
+    <div class="field">
+      <span class="field-label">英名 / English</span>
+      <div class="field-value en">${escapeHtml(d.en || "—")}</div>
+    </div>
+    <div class="field">
+      <span class="field-label">JIS規格 / Standard</span>
+      <div class="field-value mono">${escapeHtml(d.jis || "—")}</div>
+    </div>
+    <div class="field">
+      <span class="field-label">分類 / Category</span>
+      <div class="field-value">${escapeHtml(d.category)}</div>
+    </div>
+    <div class="field">
+      <span class="field-label">特徴・用途 / Feature</span>
+      <div class="field-value">${escapeHtml(d.feature || "—")}</div>
+    </div>
+    <div class="field">
+      <span class="field-label">備考 / Note</span>
+      <div class="field-value">${escapeHtml(d.note || "—")}</div>
+    </div>
+    ${d._user ? `
+    <div class="field">
+      <span class="field-label">登録情報 / Registered</span>
+      <div class="field-value" style="font-size:12px;color:var(--ink-faint);">
+        登録者: ${escapeHtml(d.registrant || "—")}<br>
+        登録日: ${escapeHtml(d.createdAt || "—")}
+      </div>
+    </div>` : ''}
+  `;
+
+  document.getElementById("modalBody").innerHTML = bodyHtml;
+
+  // イベント
+  document.getElementById("addPhotoBtn").onclick = () => {
+    document.getElementById("photoInput").click();
+  };
+  document.getElementById("addRefBtn").onclick = () => {
+    document.getElementById("refPhotoInput").click();
+  };
+
+  document.querySelectorAll(".del[data-photoidx]").forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const pi = parseInt(btn.dataset.photoidx);
+      if (confirm("この写真を削除しますか?")) {
+        const photos = userPhotos[d.code] || [];
+        photos.splice(pi, 1);
+        if (photos.length === 0) delete userPhotos[d.code];
+        else userPhotos[d.code] = photos;
+        saveUserPhotos();
+        openDetail(currentDetailIdx);
+      }
+    };
+  });
+
+  document.querySelectorAll(".del[data-refidx]").forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const ri = parseInt(btn.dataset.refidx);
+      if (confirm("この参考画像を削除しますか?")) {
+        const refs = refPhotos[d.code] || [];
+        refs.splice(ri, 1);
+        if (refs.length === 0) delete refPhotos[d.code];
+        else refPhotos[d.code] = refs;
+        saveRefPhotos();
+        openDetail(currentDetailIdx);
+      }
+    };
+  });
+
+  document.querySelectorAll("[data-fullimg]").forEach(img => {
+    img.onclick = (e) => {
+      e.stopPropagation();
+      document.getElementById("imgViewerImg").src = img.dataset.fullimg;
+      document.getElementById("imgViewer").classList.add("visible");
+    };
+  });
+
+  document.getElementById("modal").classList.add("visible");
+  document.body.style.overflow = "hidden";
+}
+
+function closeDetail() {
+  document.getElementById("modal").classList.remove("visible");
+  document.body.style.overflow = "";
+  currentDetailIdx = -1;
+}
+
+// ============================================
+// 写真処理(圧縮)
+// ============================================
+function compressAndSavePhoto(file, target, callback) {
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxSize = 800;
+      let w = img.width, h = img.height;
+      if (w > h && w > maxSize) { h = h * maxSize / w; w = maxSize; }
+      else if (h > maxSize) { w = w * maxSize / h; h = maxSize; }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+
+      const compressed = canvas.toDataURL("image/jpeg", 0.75);
+      callback(compressed);
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById("photoInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file || currentDetailIdx < 0) return;
+  compressAndSavePhoto(file, "photo", (compressed) => {
+    const all = getAllData();
+    const d = all[currentDetailIdx];
+    if (!d) return;
+    if (!userPhotos[d.code]) userPhotos[d.code] = [];
+    userPhotos[d.code].push(compressed);
+    if (saveUserPhotos()) {
+      showToast("撮影写真を保存しました");
+      openDetail(currentDetailIdx);
+    } else {
+      userPhotos[d.code].pop();
+    }
+  });
+  e.target.value = "";
+});
+
+document.getElementById("refPhotoInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file || currentDetailIdx < 0) return;
+  compressAndSavePhoto(file, "ref", (compressed) => {
+    const all = getAllData();
+    const d = all[currentDetailIdx];
+    if (!d) return;
+    if (!refPhotos[d.code]) refPhotos[d.code] = [];
+    refPhotos[d.code].push(compressed);
+    if (saveRefPhotos()) {
+      showToast("参考画像を保存しました");
+      openDetail(currentDetailIdx);
+    } else {
+      refPhotos[d.code].pop();
+    }
+  });
+  e.target.value = "";
+});
+
+// 詳細画面の★ボタン
+document.getElementById("modalStar").onclick = () => {
+  const all = getAllData();
+  const d = all[currentDetailIdx];
+  if (!d) return;
+  stars[d.code] = !stars[d.code];
+  if (!stars[d.code]) delete stars[d.code];
+  saveStars();
+  const isStarred = stars[d.code] === true;
+  const btn = document.getElementById("modalStar");
+  btn.textContent = isStarred ? "★" : "☆";
+  btn.classList.toggle("active", isStarred);
+  renderFilters();
+  renderCards();
+};
+
+// ============================================
+// 新規追加
+// ============================================
+function openAddModal() {
+  document.getElementById("addCode").value = "";
+  document.getElementById("addName").value = "";
+  document.getElementById("addJis").value = "";
+  document.getElementById("addEn").value = "";
+  document.getElementById("addCategory").value = "その他";
+  document.getElementById("addFeature").value = "";
+  document.getElementById("addNote").value = "";
+  document.getElementById("addRegistrant").value = "";
+  document.getElementById("addModal").classList.add("visible");
+  document.body.style.overflow = "hidden";
+}
+
+function collectAddForm() {
+  const code = document.getElementById("addCode").value.trim();
+  const name = document.getElementById("addName").value.trim();
+  if (!code) { showToast("略称は必須です"); return null; }
+  if (!name) { showToast("名称は必須です"); return null; }
+
+  return {
+    code, name,
+    jis: document.getElementById("addJis").value.trim(),
+    en: document.getElementById("addEn").value.trim(),
+    category: document.getElementById("addCategory").value,
+    feature: document.getElementById("addFeature").value.trim(),
+    note: document.getElementById("addNote").value.trim(),
+    registrant: document.getElementById("addRegistrant").value.trim(),
+    createdAt: new Date().toISOString().split("T")[0],
+    _user: true,
+    freeImages: []
+  };
+}
+
+function saveAddOnly() {
+  const data = collectAddForm();
+  if (!data) return;
+  userData.push(data);
+  saveUserData();
+  document.getElementById("addModal").classList.remove("visible");
+  document.body.style.overflow = "";
+  renderFilters();
+  renderCards();
+  showToast(`${data.code} を仮追加しました`);
+}
+
+function saveAndSend() {
+  const data = collectAddForm();
+  if (!data) return;
+  userData.push(data);
+  saveUserData();
+
+  if (!formUrl) {
+    document.getElementById("addModal").classList.remove("visible");
+    document.body.style.overflow = "";
+    renderFilters();
+    renderCards();
+    showToast("ローカル保存完了。送信先フォーム未設定のため設定画面を開きます");
+    setTimeout(() => openSettings(), 1500);
+    return;
+  }
+
+  try {
+    const summary = `略称: ${data.code}\n名称: ${data.name}\nJIS: ${data.jis}\n英名: ${data.en}\n分類: ${data.category}\n特徴: ${data.feature}\n備考: ${data.note}\n登録者: ${data.registrant}\n登録日: ${data.createdAt}`;
+    navigator.clipboard.writeText(summary).then(() => {
+      showToast("内容をクリップボードにコピーし、フォームを開きます");
+    });
+    window.open(formUrl, "_blank");
+  } catch(e) {
+    window.open(formUrl, "_blank");
+  }
+
+  document.getElementById("addModal").classList.remove("visible");
+  document.body.style.overflow = "";
+  renderFilters();
+  renderCards();
+}
+
+// ============================================
+// エクスポート/インポート
+// ============================================
+function exportData() {
+  const exportObj = {
+    version: "2.0",
+    exportedAt: new Date().toISOString(),
+    userData: userData,
+    userPhotos: userPhotos,
+    refPhotos: refPhotos,
+    stars: stars
+  };
+  const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `steel-jis-backup-${new Date().toISOString().split("T")[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("バックアップを書き出しました");
+}
+
+document.getElementById("importInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const obj = JSON.parse(ev.target.result);
+      if (!obj.userData && !obj.userPhotos && !obj.refPhotos && !obj.stars) {
+        showToast("ファイル形式が正しくありません");
+        return;
+      }
+      const userCount = (obj.userData || []).length;
+      const photoCount = Object.keys(obj.userPhotos || {}).length;
+      const refCount = Object.keys(obj.refPhotos || {}).length;
+      const starCount = Object.keys(obj.stars || {}).length;
+      if (!confirm(`仮追加${userCount}件、撮影写真${photoCount}件、参考画像${refCount}件、お気に入り${starCount}件をインポートします。現在のデータは上書きされます。続行しますか?`)) return;
+
+      userData = obj.userData || [];
+      userPhotos = obj.userPhotos || {};
+      refPhotos = obj.refPhotos || {};
+      stars = obj.stars || {};
+      saveUserData();
+      saveUserPhotos();
+      saveRefPhotos();
+      saveStars();
+      renderFilters();
+      renderCards();
+      showToast("インポート完了");
+      document.getElementById("menuModal").classList.remove("visible");
+      document.body.style.overflow = "";
+    } catch(err) {
+      showToast("読み込みエラー: " + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
+
+// ============================================
+// 設定
+// ============================================
+function openSettings() {
+  document.getElementById("menuModal").classList.remove("visible");
+  document.getElementById("formUrlInput").value = formUrl;
+
+  document.getElementById("userDataStat").textContent = `仮追加データ: ${userData.length}件`;
+
+  const photoCount = Object.values(userPhotos).reduce((s, p) => s + p.length, 0);
+  const refCount = Object.values(refPhotos).reduce((s, p) => s + p.length, 0);
+  const photoSize = JSON.stringify(userPhotos).length + JSON.stringify(refPhotos).length;
+  document.getElementById("photoStat").textContent =
+    `参考画像${refCount}枚 + 撮影写真${photoCount}枚 / 合計約${(photoSize / 1024 / 1024).toFixed(2)} MB`;
+
+  const starCount = Object.values(stars).filter(v => v).length;
+  document.getElementById("starStat").textContent = `お気に入り: ${starCount}件`;
+
+  document.getElementById("settingsModal").classList.add("visible");
+  document.body.style.overflow = "hidden";
+}
+
+document.getElementById("saveFormUrlBtn").onclick = () => {
+  formUrl = document.getElementById("formUrlInput").value.trim();
+  localStorage.setItem(LS_FORM_URL, formUrl);
+  showToast("フォームURLを保存しました");
+};
+
+document.getElementById("clearUserDataBtn").onclick = () => {
+  if (confirm("仮追加データを全て削除します。よろしいですか?")) {
+    userData = [];
+    saveUserData();
+    renderFilters();
+    renderCards();
+    openSettings();
+    showToast("仮追加データを削除しました");
+  }
+};
+
+document.getElementById("clearPhotosBtn").onclick = () => {
+  if (confirm("参考画像・撮影写真を全て削除します。よろしいですか?")) {
+    userPhotos = {};
+    refPhotos = {};
+    saveUserPhotos();
+    saveRefPhotos();
+    openSettings();
+    showToast("写真を削除しました");
+  }
+};
+
+document.getElementById("clearStarsBtn").onclick = () => {
+  if (confirm("お気に入りを全解除します。よろしいですか?")) {
+    stars = {};
+    saveStars();
+    renderFilters();
+    renderCards();
+    openSettings();
+    showToast("お気に入りを解除しました");
+  }
+};
+
+// ============================================
+// 削除
+// ============================================
+document.getElementById("deleteBtn").onclick = () => {
+  const all = getAllData();
+  const d = all[currentDetailIdx];
+  if (!d || !d._user) return;
+  if (!confirm(`${d.code} を削除しますか?`)) return;
+
+  const userIdx = userData.indexOf(d);
+  if (userIdx >= 0) {
+    userData.splice(userIdx, 1);
+    saveUserData();
+    if (userPhotos[d.code]) { delete userPhotos[d.code]; saveUserPhotos(); }
+    if (refPhotos[d.code]) { delete refPhotos[d.code]; saveRefPhotos(); }
+    if (stars[d.code]) { delete stars[d.code]; saveStars(); }
+    closeDetail();
+    renderFilters();
+    renderCards();
+    showToast(`${d.code} を削除しました`);
+  }
+};
+
+// ============================================
+// ユーティリティ
+// ============================================
+function escapeHtml(s) {
+  if (s === null || s === undefined) return "";
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("visible");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("visible"), 2500);
+}
+
+// ============================================
+// イベント
+// ============================================
+document.getElementById("search").addEventListener("input", e => {
+  currentSearch = e.target.value;
+  document.getElementById("clearBtn").classList.toggle("visible", !!currentSearch);
+  renderCards();
+});
+
+document.getElementById("clearBtn").onclick = () => {
+  document.getElementById("search").value = "";
+  currentSearch = "";
+  document.getElementById("clearBtn").classList.remove("visible");
+  renderCards();
+};
+
+document.getElementById("closeBtn").onclick = closeDetail;
+document.getElementById("modal").onclick = e => {
+  if (e.target.id === "modal") closeDetail();
+};
+
+document.getElementById("menuBtn").onclick = () => {
+  document.getElementById("menuModal").classList.add("visible");
+  document.body.style.overflow = "hidden";
+};
+document.getElementById("menuCloseBtn").onclick = () => {
+  document.getElementById("menuModal").classList.remove("visible");
+  document.body.style.overflow = "";
+};
+document.getElementById("menuModal").onclick = e => {
+  if (e.target.id === "menuModal") {
+    document.getElementById("menuModal").classList.remove("visible");
+    document.body.style.overflow = "";
+  }
+};
+
+document.querySelectorAll(".menu-item").forEach(item => {
+  item.onclick = () => {
+    const action = item.dataset.action;
+    document.getElementById("menuModal").classList.remove("visible");
+    document.body.style.overflow = "";
+
+    if (action === "add") setTimeout(openAddModal, 100);
+    else if (action === "export") exportData();
+    else if (action === "import") document.getElementById("importInput").click();
+    else if (action === "settings") setTimeout(openSettings, 100);
+    else if (action === "about") {
+      setTimeout(() => {
+        document.getElementById("aboutModal").classList.add("visible");
+        document.body.style.overflow = "hidden";
+      }, 100);
+    }
+  };
+});
+
+document.getElementById("addCloseBtn").onclick = () => {
+  document.getElementById("addModal").classList.remove("visible");
+  document.body.style.overflow = "";
+};
+document.getElementById("addSaveOnlyBtn").onclick = saveAddOnly;
+document.getElementById("addSendBtn").onclick = saveAndSend;
+
+document.getElementById("settingsCloseBtn").onclick = () => {
+  document.getElementById("settingsModal").classList.remove("visible");
+  document.body.style.overflow = "";
+};
+
+document.getElementById("aboutCloseBtn").onclick = () => {
+  document.getElementById("aboutModal").classList.remove("visible");
+  document.body.style.overflow = "";
+};
+
+document.getElementById("imgViewerClose").onclick = () => {
+  document.getElementById("imgViewer").classList.remove("visible");
+};
+document.getElementById("imgViewer").onclick = (e) => {
+  if (e.target.id === "imgViewer" || e.target.id === "imgViewerClose") {
+    document.getElementById("imgViewer").classList.remove("visible");
+  }
+};
+
+// 起動
+loadState();
+renderFilters();
+renderCards();
+
+// ============================================
+// Service Worker登録(PWA)
+// ============================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js')
+      .then((reg) => {
+        console.log('Service Worker registered:', reg.scope);
+      })
+      .catch((err) => {
+        console.warn('Service Worker registration failed:', err);
+      });
+  });
+}
+</script>
+
+</body>
+</html>
