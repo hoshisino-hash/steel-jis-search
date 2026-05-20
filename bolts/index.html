@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a1a1a">
+<meta name="description" content="メートルねじ・UNC/UNFの寸法、強度区分、締付トルクを参照する現場ツール。エレベーター・機械部品の品質保証業務向け。">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ボルト規格">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<title>ボルト・ねじ規格 早見表</title>
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --bg-card: #ffffff;
+    --ink: #1a1a1a;
+    --ink-dim: #4a4a4a;
+    --ink-faint: #8a8a8a;
+    --accent: #8b0000;
+    --gold: #b8860b;
+    --line: #d4cfc4;
+    --line-soft: #e8e3d8;
+    --warn: #b8860b;
+    --hitachi: #003399;
+    --ok: #2d6a3f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: contain;
+  }
+
+  body {
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  header {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 14px 16px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 3px double var(--line);
+  }
+
+  .title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .title-jp {
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+
+  .title-en {
+    font-family: Georgia, serif;
+    font-size: 10px;
+    color: var(--ink-faint);
+    font-style: italic;
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+
+  .menu-btn {
+    background: none;
+    border: 1px solid var(--bg);
+    color: var(--bg);
+    width: 34px;
+    height: 34px;
+    font-size: 18px;
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+
+  .search-box {
+    position: relative;
+  }
+
+  .search-box input {
+    width: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    border: none;
+    padding: 11px 14px 11px 40px;
+    font-size: 16px;
+    font-family: inherit;
+    border-radius: 2px;
+    outline: none;
+  }
+
+  .search-box input:focus {
+    box-shadow: inset 0 -2px 0 var(--accent);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: var(--ink-faint);
+    font-family: Georgia, serif;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--ink-faint);
+    font-size: 20px;
+    padding: 6px 10px;
+    cursor: pointer;
+    display: none;
+  }
+
+  .clear-btn.visible { display: block; }
+
+  .tab-row {
+    display: flex;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--ink-dim);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 12px 6px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    letter-spacing: 0.08em;
+  }
+
+  .tab-btn.active {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .tab-btn .sub {
+    display: block;
+    font-family: Georgia, serif;
+    font-size: 9px;
+    font-style: italic;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    margin-top: 1px;
+  }
+
+  .meta-row {
+    padding: 10px 16px 4px;
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-family: Georgia, serif;
+    letter-spacing: 0.05em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .count-num {
+    font-size: 14px;
+    color: var(--accent);
+    font-weight: bold;
+  }
+
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 8px 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line-soft);
+    scrollbar-width: none;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-row.hidden { display: none; }
+
+  .filter-chip {
+    flex-shrink: 0;
+    padding: 5px 11px;
+    background: transparent;
+    border: 1px solid var(--ink-dim);
+    color: var(--ink-dim);
+    font-family: inherit;
+    font-size: 12px;
+    border-radius: 16px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .filter-chip.active {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+
+  .cards {
+    padding: 6px 12px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    padding: 14px;
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.15s, transform 0.1s;
+  }
+
+  .card:active {
+    transform: scale(0.99);
+    border-color: var(--ink);
+  }
+
+  .card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .card-code {
+    font-family: "Courier New", monospace;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .card-tag {
+    font-size: 10px;
+    color: var(--ink-faint);
+    font-family: "Courier New", monospace;
+    background: var(--line-soft);
+    padding: 2px 6px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+
+  .card-name {
+    font-size: 13px;
+    color: var(--ink-dim);
+    margin-bottom: 6px;
+  }
+
+  .card-stats {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+
+  .card-stats .lbl {
+    color: var(--ink-faint);
+    font-family: Georgia, serif;
+    font-style: italic;
+    margin-right: 3px;
+  }
+
+  .card-stats .val {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ===== Torque calculator ===== */
+  .calc-section {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    margin: 12px;
+    padding: 16px;
+  }
+
+  .calc-title {
+    font-size: 14px;
+    color: var(--ink-dim);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+    letter-spacing: 0.08em;
+  }
+
+  .calc-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+
+  .calc-row label {
+    font-size: 13px;
+    color: var(--ink-dim);
+  }
+
+  .calc-row select,
+  .calc-row input[type="number"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Courier New", monospace;
+    font-size: 14px;
+    border-radius: 2px;
+    outline: none;
+  }
+
+  .calc-row select:focus,
+  .calc-row input:focus {
+    border-color: var(--ink);
+  }
+
+  .friction-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .friction-chip {
+    padding: 5px 10px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink-dim);
+    font-family: inherit;
+    font-size: 12px;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+
+  .friction-chip.active {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+
+  .calc-output {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 16px;
+    margin-top: 14px;
+    border-radius: 2px;
+  }
+
+  .calc-out-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px dotted rgba(255,255,255,0.2);
+  }
+
+  .calc-out-row:last-child { border-bottom: none; }
+
+  .calc-out-row .key {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    font-family: Georgia, serif;
+    font-style: italic;
+  }
+
+  .calc-out-row .val {
+    font-family: "Courier New", monospace;
+    font-size: 17px;
+    font-weight: bold;
+  }
+
+  .calc-out-row .val .unit {
+    font-size: 11px;
+    font-weight: normal;
+    color: rgba(255,255,255,0.7);
+    margin-left: 4px;
+  }
+
+  .calc-note {
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line-soft);
+    line-height: 1.5;
+  }
+
+  /* ===== Modal ===== */
+  .modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .modal-bg.visible {
+    display: flex;
+    animation: fadeIn 0.2s;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal {
+    background: var(--bg);
+    width: 100%;
+    max-width: 600px;
+    max-height: 92vh;
+    overflow-y: auto;
+    border-top: 4px solid var(--ink);
+    animation: slideUp 0.25s;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .modal-head {
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-card);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-code {
+    font-family: "Courier New", monospace;
+    font-size: 22px;
+    font-weight: bold;
+  }
+
+  .modal-close {
+    background: none;
+    border: 1px solid var(--ink-dim);
+    width: 32px;
+    height: 32px;
+    color: var(--ink-dim);
+    font-size: 18px;
+    cursor: pointer;
+    font-family: inherit;
+    border-radius: 2px;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .modal-name {
+    font-size: 14px;
+    color: var(--ink-dim);
+    margin-bottom: 14px;
+  }
+
+  .spec-section {
+    margin-bottom: 18px;
+  }
+
+  .spec-section-title {
+    font-size: 12px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 4px;
+    margin-bottom: 10px;
+    font-family: Georgia, serif;
+    font-style: italic;
+  }
+
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+  }
+
+  .spec-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 13px;
+  }
+
+  .spec-table tr:last-child td { border-bottom: none; }
+
+  .spec-table td:first-child {
+    color: var(--ink-dim);
+    width: 45%;
+    background: rgba(0,0,0,0.02);
+  }
+
+  .spec-table td:last-child {
+    font-family: "Courier New", monospace;
+    color: var(--ink);
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .spec-note {
+    background: rgba(184, 134, 11, 0.08);
+    border-left: 2px solid var(--gold);
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-top: 10px;
+    line-height: 1.7;
+  }
+
+  .torque-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+
+  .torque-grid > div {
+    background: var(--bg-card);
+    padding: 8px 6px;
+    text-align: center;
+    font-size: 12px;
+    font-family: "Courier New", monospace;
+  }
+
+  .torque-grid .th {
+    background: var(--line-soft);
+    color: var(--ink-dim);
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 11px;
+  }
+
+  /* Menu modal */
+  .menu-modal {
+    background: var(--bg);
+    width: 100%;
+    max-width: 600px;
+    border-top: 4px solid var(--ink);
+    animation: slideUp 0.25s;
+  }
+
+  .menu-head {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-card);
+  }
+
+  .menu-title {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+
+  .menu-item {
+    width: 100%;
+    background: var(--bg-card);
+    border: none;
+    border-bottom: 1px solid var(--line-soft);
+    padding: 14px 16px;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .menu-item:active { background: var(--line-soft); }
+
+  .menu-item .icon {
+    font-size: 18px;
+    width: 22px;
+    text-align: center;
+  }
+
+  .menu-item .label-wrap {
+    flex: 1;
+  }
+
+  .menu-item .sub {
+    display: block;
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-top: 2px;
+  }
+
+  .about-body {
+    padding: 16px 18px;
+    font-size: 13px;
+    color: var(--ink-dim);
+    line-height: 1.8;
+  }
+
+  .about-body h3 {
+    font-size: 13px;
+    color: var(--ink);
+    margin-top: 14px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 3px;
+  }
+
+  .about-body ul {
+    padding-left: 20px;
+    font-size: 12px;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 10px 18px;
+    border-radius: 2px;
+    font-size: 13px;
+    z-index: 300;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .toast.visible { opacity: 1; }
+
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--ink-faint);
+    font-size: 13px;
+  }
+
+  /* footer hint */
+  footer {
+    text-align: center;
+    padding: 20px 16px 40px;
+    font-size: 10px;
+    color: var(--ink-faint);
+    font-family: Georgia, serif;
+    font-style: italic;
+    letter-spacing: 0.1em;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <div>
+      <div class="title-jp">ボルト・ねじ規格</div>
+      <div class="title-en">METRIC / UNIFIED THREAD STANDARDS</div>
+    </div>
+    <button class="menu-btn" id="menuBtn">≡</button>
+  </div>
+  <div class="search-box">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="searchInput" placeholder="例: M8, 8.8, 1/4-20, ステンレス" autocomplete="off">
+    <button class="clear-btn" id="clearBtn">×</button>
+  </div>
+</header>
+
+<div class="tab-row">
+  <button class="tab-btn active" data-tab="metric">寸法<span class="sub">METRIC</span></button>
+  <button class="tab-btn" data-tab="strength">強度区分<span class="sub">CLASS</span></button>
+  <button class="tab-btn" data-tab="torque">締付トルク<span class="sub">TORQUE</span></button>
+  <button class="tab-btn" data-tab="inch">インチ<span class="sub">UNC/UNF</span></button>
+</div>
+
+<div class="filter-row" id="filterRow"></div>
+
+<div class="meta-row">
+  <span id="filterLabel">— all metric —</span>
+  <span><span class="count-num" id="countNum">0</span> items</span>
+</div>
+
+<div id="contentArea"></div>
+
+<footer>BOLT &amp; SCREW REFERENCE — JIS B 1180 / 1051 / 0205 · ISO 898-1 · ANSI B1.1</footer>
+
+<!-- Detail modal -->
+<div class="modal-bg" id="detailModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-code" id="modalCode"></div>
+      <button class="modal-close" id="modalClose">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Menu modal -->
+<div class="modal-bg" id="menuModal">
+  <div class="menu-modal">
+    <div class="menu-head">
+      <div class="menu-title">メニュー</div>
+      <button class="modal-close" id="menuCloseBtn">×</button>
+    </div>
+    <button class="menu-item" data-action="about">
+      <span class="icon">⚐</span>
+      <div class="label-wrap">このアプリについて<span class="sub">使い方・出典・注意事項</span></div>
+    </button>
+    <button class="menu-item" data-action="steel-app">
+      <span class="icon">⌕</span>
+      <div class="label-wrap">鋼材JIS規格 早見表へ<span class="sub">姉妹アプリ(steel-jis-search)</span></div>
+    </button>
+  </div>
+</div>
+
+<!-- About modal -->
+<div class="modal-bg" id="aboutModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-code" style="font-size:17px;">このアプリについて</div>
+      <button class="modal-close" id="aboutCloseBtn">×</button>
+    </div>
+    <div class="about-body">
+      <p>エレベーター・機械部品の品質保証業務で、ボルト・ねじの寸法、強度区分、締付トルクを現場で素早く確認するためのオフライン対応PWA。</p>
+
+      <h3>4つのタブ</h3>
+      <ul>
+        <li><b>寸法</b> — メートルねじM2〜M42の有効径・谷径・応力断面積・六角ボルト/キャップボルト寸法</li>
+        <li><b>強度区分</b> — ISO 898-1 / JIS B 1051 の引張強さ・耐力・硬度。ステンレス区分(A2, A4) も収録</li>
+        <li><b>締付トルク</b> — サイズ・強度区分・摩擦係数を選ぶと推奨軸力と締付トルクを自動計算</li>
+        <li><b>インチ</b> — UNC / UNF(1/4 〜 1) の寸法と応力断面積</li>
+      </ul>
+
+      <h3>計算式</h3>
+      <ul>
+        <li>推奨軸力 F = 0.7 × Rp0.2 × As [N]</li>
+        <li>締付トルク T = K × F × d / 1000 [N·m]</li>
+        <li>K は摩擦係数(トルク係数)。乾燥0.20 / 軽油0.16 / グリース0.14 / モリブデン0.12</li>
+      </ul>
+
+      <h3>注意事項</h3>
+      <ul>
+        <li>表示値は規格値および計算値で、実機の安全率・座面摩擦・締付方法による補正が必要</li>
+        <li>重要保安部品では各メーカー指示値・社内基準を優先</li>
+        <li>UNC/UNFの応力断面積は ASME B1.1 (3A/3Bクラス) 換算値</li>
+        <li>ISO・JIS規格の改訂で数値が変わることがあるので最新版を確認のこと</li>
+      </ul>
+
+      <h3>出典</h3>
+      <ul>
+        <li>JIS B 0205-4:2001 — メートル並目ねじ・細目ねじ</li>
+        <li>JIS B 1051:2014 — 炭素鋼及び合金鋼製締結用部品の機械的性質</li>
+        <li>JIS B 1054-1:2013 — 耐食ステンレス鋼製締結用部品の機械的性質</li>
+        <li>JIS B 1180:2014 — 六角ボルト</li>
+        <li>JIS B 1176:2014 — 六角穴付きボルト</li>
+        <li>ISO 898-1:2013 / ISO 3506-1:2009 / ASME B1.1-2003</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================================================
+// DATA
+// =====================================================
+
+// メートルねじ (JIS B 0205-4 / ISO 724)
+// d=呼び径, P=ピッチ, d2=有効径, d1=谷径, As=応力断面積(mm²)
+// fine=細目, hex=六角ボルト二面幅(s)/頭部高さ(k), cap=キャップボルト六角穴(s)/頭部径(dk)/頭部高さ(k)
+const METRIC = [
+  { d: 2,   coarse: { P: 0.4,  d2: 1.740, d1: 1.567, As: 2.07 }, fine: [], hex: { s: 4,    k: 1.4 },  cap: { s: 1.5, dk: 3.8, k: 2 } },
+  { d: 2.5, coarse: { P: 0.45, d2: 2.208, d1: 2.013, As: 3.39 }, fine: [], hex: { s: 5,    k: 1.7 },  cap: { s: 2,   dk: 4.5, k: 2.5 } },
+  { d: 3,   coarse: { P: 0.5,  d2: 2.675, d1: 2.459, As: 5.03 }, fine: [], hex: { s: 5.5,  k: 2.0 },  cap: { s: 2.5, dk: 5.5, k: 3 } },
+  { d: 4,   coarse: { P: 0.7,  d2: 3.545, d1: 3.242, As: 8.78 }, fine: [], hex: { s: 7,    k: 2.8 },  cap: { s: 3,   dk: 7,   k: 4 } },
+  { d: 5,   coarse: { P: 0.8,  d2: 4.480, d1: 4.134, As: 14.2 }, fine: [], hex: { s: 8,    k: 3.5 },  cap: { s: 4,   dk: 8.5, k: 5 } },
+  { d: 6,   coarse: { P: 1.0,  d2: 5.350, d1: 4.917, As: 20.1 }, fine: [], hex: { s: 10,   k: 4.0 },  cap: { s: 5,   dk: 10,  k: 6 } },
+  { d: 8,   coarse: { P: 1.25, d2: 7.188, d1: 6.647, As: 36.6 }, fine: [{ P: 1.0, d2: 7.350, d1: 6.917, As: 39.2 }], hex: { s: 13, k: 5.3 },  cap: { s: 6,   dk: 13,  k: 8 } },
+  { d: 10,  coarse: { P: 1.5,  d2: 9.026, d1: 8.376, As: 58.0 }, fine: [{ P: 1.25, d2: 9.188, d1: 8.647, As: 61.2 }, { P: 1.0, d2: 9.350, d1: 8.917, As: 64.5 }], hex: { s: 17, k: 6.4 },  cap: { s: 8,   dk: 16,  k: 10 } },
+  { d: 12,  coarse: { P: 1.75, d2: 10.863, d1: 10.106, As: 84.3 }, fine: [{ P: 1.5, d2: 11.026, d1: 10.376, As: 88.1 }, { P: 1.25, d2: 11.188, d1: 10.647, As: 92.1 }], hex: { s: 19, k: 7.5 },  cap: { s: 10, dk: 18,  k: 12 } },
+  { d: 14,  coarse: { P: 2.0,  d2: 12.701, d1: 11.835, As: 115 }, fine: [{ P: 1.5, d2: 13.026, d1: 12.376, As: 125 }], hex: { s: 22, k: 8.8 },  cap: { s: 12, dk: 21,  k: 14 } },
+  { d: 16,  coarse: { P: 2.0,  d2: 14.701, d1: 13.835, As: 157 }, fine: [{ P: 1.5, d2: 15.026, d1: 14.376, As: 167 }], hex: { s: 24, k: 10.0 }, cap: { s: 14, dk: 24,  k: 16 } },
+  { d: 18,  coarse: { P: 2.5,  d2: 16.376, d1: 15.294, As: 192 }, fine: [{ P: 1.5, d2: 17.026, d1: 16.376, As: 216 }], hex: { s: 27, k: 11.5 }, cap: { s: 14, dk: 27,  k: 18 } },
+  { d: 20,  coarse: { P: 2.5,  d2: 18.376, d1: 17.294, As: 245 }, fine: [{ P: 1.5, d2: 19.026, d1: 18.376, As: 272 }], hex: { s: 30, k: 12.5 }, cap: { s: 17, dk: 30,  k: 20 } },
+  { d: 22,  coarse: { P: 2.5,  d2: 20.376, d1: 19.294, As: 303 }, fine: [{ P: 1.5, d2: 21.026, d1: 20.376, As: 333 }], hex: { s: 32, k: 14.0 }, cap: { s: 17, dk: 33,  k: 22 } },
+  { d: 24,  coarse: { P: 3.0,  d2: 22.051, d1: 20.752, As: 353 }, fine: [{ P: 2.0, d2: 22.701, d1: 21.835, As: 384 }], hex: { s: 36, k: 15.0 }, cap: { s: 19, dk: 36,  k: 24 } },
+  { d: 27,  coarse: { P: 3.0,  d2: 25.051, d1: 23.752, As: 459 }, fine: [{ P: 2.0, d2: 25.701, d1: 24.835, As: 496 }], hex: { s: 41, k: 17.0 }, cap: { s: 19, dk: 40,  k: 27 } },
+  { d: 30,  coarse: { P: 3.5,  d2: 27.727, d1: 26.211, As: 561 }, fine: [{ P: 2.0, d2: 28.701, d1: 27.835, As: 621 }], hex: { s: 46, k: 18.7 }, cap: { s: 22, dk: 45,  k: 30 } },
+  { d: 33,  coarse: { P: 3.5,  d2: 30.727, d1: 29.211, As: 694 }, fine: [{ P: 2.0, d2: 31.701, d1: 30.835, As: 761 }], hex: { s: 50, k: 21.0 }, cap: { s: 24, dk: 50,  k: 33 } },
+  { d: 36,  coarse: { P: 4.0,  d2: 33.402, d1: 31.670, As: 817 }, fine: [{ P: 3.0, d2: 34.051, d1: 32.752, As: 865 }], hex: { s: 55, k: 22.5 }, cap: { s: 27, dk: 54,  k: 36 } },
+  { d: 42,  coarse: { P: 4.5,  d2: 39.077, d1: 37.129, As: 1121 }, fine: [{ P: 3.0, d2: 40.051, d1: 38.752, As: 1206 }], hex: { s: 65, k: 26.0 }, cap: { s: 32, dk: 63, k: 42 } },
+];
+
+// 強度区分 (ISO 898-1 / JIS B 1051) + ステンレス (ISO 3506-1)
+// Rm=引張強さ最小値(MPa), Rp=耐力(0.2%)最小値(MPa), A=伸び%, hv=硬度範囲(HV), material=代表材質
+const STRENGTH = [
+  { grade: "3.6",  type: "carbon", Rm: 330,  Rp: 190,  A: 25, hvMin: 95,  hvMax: 220, material: "低炭素鋼(冷間圧造)", note: "軽荷重・低強度用。SWCH10R等。" },
+  { grade: "4.6",  type: "carbon", Rm: 400,  Rp: 240,  A: 22, hvMin: 120, hvMax: 220, material: "低炭素鋼", note: "汎用品。SS400・SWCH10A相当。" },
+  { grade: "4.8",  type: "carbon", Rm: 420,  Rp: 340,  A: 14, hvMin: 130, hvMax: 220, material: "低炭素鋼(冷間加工)", note: "冷間圧造加工強化品。" },
+  { grade: "5.6",  type: "carbon", Rm: 500,  Rp: 300,  A: 20, hvMin: 155, hvMax: 220, material: "中炭素鋼", note: "" },
+  { grade: "5.8",  type: "carbon", Rm: 520,  Rp: 420,  A: 10, hvMin: 160, hvMax: 220, material: "低炭素鋼(冷間加工)", note: "" },
+  { grade: "6.8",  type: "carbon", Rm: 600,  Rp: 480,  A: 8,  hvMin: 190, hvMax: 250, material: "中炭素鋼", note: "" },
+  { grade: "8.8",  type: "carbon", Rm: 800,  Rp: 640,  A: 12, hvMin: 250, hvMax: 320, material: "中炭素鋼 焼入焼戻 (S45C等)", note: "最も普及。高張力ボルトの代表。", star: true },
+  { grade: "9.8",  type: "carbon", Rm: 900,  Rp: 720,  A: 10, hvMin: 290, hvMax: 360, material: "中炭素鋼 焼入焼戻", note: "M16以下のみ規定。" },
+  { grade: "10.9", type: "carbon", Rm: 1040, Rp: 940,  A: 9,  hvMin: 320, hvMax: 380, material: "合金鋼 焼入焼戻 (SCM435等)", note: "高強度。重要保安部品に使用。", star: true },
+  { grade: "12.9", type: "carbon", Rm: 1220, Rp: 1100, A: 8,  hvMin: 385, hvMax: 435, material: "合金鋼 焼入焼戻 (SCM440・SNB7)", note: "最高強度区分。遅れ破壊に注意。", star: true },
+  { grade: "14.9", type: "carbon", Rm: 1400, Rp: 1260, A: 7,  hvMin: 440, hvMax: 500, material: "合金鋼 焼入焼戻", note: "特殊用途。" },
+  { grade: "A2-50", type: "stainless", Rm: 500, Rp: 210, A: 0.6, hvMin: 130, hvMax: 200, material: "SUS304相当(軟質)", note: "ステンレス・標準強度。" },
+  { grade: "A2-70", type: "stainless", Rm: 700, Rp: 450, A: 0.4, hvMin: 200, hvMax: 270, material: "SUS304相当(冷間加工)", note: "ステンレス汎用品。最普及。", star: true },
+  { grade: "A2-80", type: "stainless", Rm: 800, Rp: 600, A: 0.3, hvMin: 240, hvMax: 320, material: "SUS304相当(高強度冷間加工)", note: "高強度ステンレス。" },
+  { grade: "A4-70", type: "stainless", Rm: 700, Rp: 450, A: 0.4, hvMin: 200, hvMax: 270, material: "SUS316相当", note: "海水・塩害環境用。", star: true },
+  { grade: "A4-80", type: "stainless", Rm: 800, Rp: 600, A: 0.3, hvMin: 240, hvMax: 320, material: "SUS316相当(高強度)", note: "高耐食+高強度。" },
+];
+
+// インチねじ (UNC/UNF) - ASME B1.1
+// size=表記, tpi=ねじ山数/inch, d=外径mm, P=ピッチmm, As=応力断面積mm² (UN規格3A/3Bクラス換算)
+const INCH = [
+  { size: '#4-40 UNC',  tpi: 40, d: 2.845, P: 0.635, As: 4.71,  group: "UNC" },
+  { size: '#4-48 UNF',  tpi: 48, d: 2.845, P: 0.529, As: 4.97,  group: "UNF" },
+  { size: '#6-32 UNC',  tpi: 32, d: 3.505, P: 0.794, As: 7.42,  group: "UNC" },
+  { size: '#6-40 UNF',  tpi: 40, d: 3.505, P: 0.635, As: 7.95,  group: "UNF" },
+  { size: '#8-32 UNC',  tpi: 32, d: 4.166, P: 0.794, As: 10.84, group: "UNC" },
+  { size: '#8-36 UNF',  tpi: 36, d: 4.166, P: 0.706, As: 11.23, group: "UNF" },
+  { size: '#10-24 UNC', tpi: 24, d: 4.826, P: 1.058, As: 13.61, group: "UNC" },
+  { size: '#10-32 UNF', tpi: 32, d: 4.826, P: 0.794, As: 14.84, group: "UNF" },
+  { size: '1/4-20 UNC', tpi: 20, d: 6.350, P: 1.270, As: 20.45, group: "UNC" },
+  { size: '1/4-28 UNF', tpi: 28, d: 6.350, P: 0.907, As: 21.81, group: "UNF" },
+  { size: '5/16-18 UNC',tpi: 18, d: 7.938, P: 1.411, As: 33.74, group: "UNC" },
+  { size: '5/16-24 UNF',tpi: 24, d: 7.938, P: 1.058, As: 36.06, group: "UNF" },
+  { size: '3/8-16 UNC', tpi: 16, d: 9.525, P: 1.587, As: 49.99, group: "UNC" },
+  { size: '3/8-24 UNF', tpi: 24, d: 9.525, P: 1.058, As: 56.45, group: "UNF" },
+  { size: '7/16-14 UNC',tpi: 14, d: 11.113,P: 1.814, As: 68.45, group: "UNC" },
+  { size: '7/16-20 UNF',tpi: 20, d: 11.113,P: 1.270, As: 76.32, group: "UNF" },
+  { size: '1/2-13 UNC', tpi: 13, d: 12.700,P: 1.954, As: 91.55, group: "UNC" },
+  { size: '1/2-20 UNF', tpi: 20, d: 12.700,P: 1.270, As: 104.13,group: "UNF" },
+  { size: '9/16-12 UNC',tpi: 12, d: 14.288,P: 2.117, As: 117.41,group: "UNC" },
+  { size: '9/16-18 UNF',tpi: 18, d: 14.288,P: 1.411, As: 133.55,group: "UNF" },
+  { size: '5/8-11 UNC', tpi: 11, d: 15.875,P: 2.309, As: 145.81,group: "UNC" },
+  { size: '5/8-18 UNF', tpi: 18, d: 15.875,P: 1.411, As: 168.39,group: "UNF" },
+  { size: '3/4-10 UNC', tpi: 10, d: 19.050,P: 2.540, As: 215.48,group: "UNC" },
+  { size: '3/4-16 UNF', tpi: 16, d: 19.050,P: 1.587, As: 240.65,group: "UNF" },
+  { size: '7/8-9 UNC',  tpi: 9,  d: 22.225,P: 2.822, As: 298.06,group: "UNC" },
+  { size: '7/8-14 UNF', tpi: 14, d: 22.225,P: 1.814, As: 328.39,group: "UNF" },
+  { size: '1-8 UNC',    tpi: 8,  d: 25.400,P: 3.175, As: 390.97,group: "UNC" },
+  { size: '1-12 UNF',   tpi: 12, d: 25.400,P: 2.117, As: 427.10,group: "UNF" },
+  { size: '1-14 UNS',   tpi: 14, d: 25.400,P: 1.814, As: 437.42,group: "UNS" },
+  { size: '1 1/8-7 UNC',tpi: 7,  d: 28.575,P: 3.628, As: 491.61,group: "UNC" },
+  { size: '1 1/4-7 UNC',tpi: 7,  d: 31.750,P: 3.628, As: 624.51,group: "UNC" },
+];
+
+// 摩擦係数プリセット
+const FRICTION = [
+  { K: 0.20, label: "乾燥" },
+  { K: 0.16, label: "軽油" },
+  { K: 0.14, label: "グリース" },
+  { K: 0.12, label: "MoS₂" },
+];
+
+// =====================================================
+// STATE
+// =====================================================
+let currentTab = "metric";
+let currentFilter = "";  // for sub-filters within a tab
+let searchQuery = "";
+
+// torque calc state
+let torqueState = {
+  size: 10,    // M10
+  pitch: null, // null = coarse
+  grade: "8.8",
+  K: 0.20,
+  ratio: 0.70, // 軸力 / 耐力
+};
+
+// =====================================================
+// HELPERS
+// =====================================================
+function $(id) { return document.getElementById(id); }
+
+function showToast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("visible");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => t.classList.remove("visible"), 2000);
+}
+
+function fmt(num, dec) {
+  if (num == null || isNaN(num)) return "—";
+  if (dec === undefined) dec = num >= 100 ? 0 : num >= 10 ? 1 : 2;
+  return num.toFixed(dec);
+}
+
+// Find metric thread by d and pitch (pitch=null means coarse)
+function findThread(d, pitch) {
+  const item = METRIC.find(m => m.d === d);
+  if (!item) return null;
+  if (pitch == null || pitch === item.coarse.P) {
+    return { ...item.coarse, d, isFine: false };
+  }
+  const f = item.fine.find(f => f.P === pitch);
+  if (f) return { ...f, d, isFine: true };
+  return null;
+}
+
+function getMetricLabel(d, pitch, isFine) {
+  if (pitch == null) {
+    const it = METRIC.find(m => m.d === d);
+    return `M${d}×${it.coarse.P}`;
+  }
+  return `M${d}×${pitch}${isFine ? " (細目)" : ""}`;
+}
+
+// =====================================================
+// RENDERING
+// =====================================================
+function render() {
+  const filterRow = $("filterRow");
+  const content = $("contentArea");
+  const filterLabel = $("filterLabel");
+  const countNum = $("countNum");
+
+  // tabs
+  document.querySelectorAll(".tab-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.tab === currentTab);
+  });
+
+  if (currentTab === "metric")    renderMetric();
+  else if (currentTab === "strength") renderStrength();
+  else if (currentTab === "torque")   renderTorque();
+  else if (currentTab === "inch")     renderInch();
+}
+
+// ---------- Metric tab ----------
+function renderMetric() {
+  const filterRow = $("filterRow");
+  const content = $("contentArea");
+  const filterLabel = $("filterLabel");
+  const countNum = $("countNum");
+
+  // sub-filter: small / medium / large / fine
+  filterRow.classList.remove("hidden");
+  const subs = [
+    { id: "", label: "すべて" },
+    { id: "small", label: "M2〜M6" },
+    { id: "medium", label: "M8〜M16" },
+    { id: "large", label: "M18〜M42" },
+    { id: "fine", label: "細目あり" },
+  ];
+  filterRow.innerHTML = subs.map(s =>
+    `<button class="filter-chip ${currentFilter === s.id ? "active" : ""}" data-sub="${s.id}">${s.label}</button>`
+  ).join("");
+  filterRow.querySelectorAll(".filter-chip").forEach(b => {
+    b.onclick = () => {
+      currentFilter = b.dataset.sub;
+      render();
+    };
+  });
+
+  filterLabel.textContent = `— metric ${currentFilter || "all"} —`;
+
+  let list = METRIC.filter(m => {
+    if (currentFilter === "small") return m.d <= 6;
+    if (currentFilter === "medium") return m.d >= 8 && m.d <= 16;
+    if (currentFilter === "large") return m.d >= 18;
+    if (currentFilter === "fine") return m.fine && m.fine.length > 0;
+    return true;
+  });
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase().replace(/\s+/g, "");
+    list = list.filter(m => {
+      const tokens = [
+        `m${m.d}`, `${m.d}`,
+        `m${m.d}×${m.coarse.P}`.toLowerCase(),
+        ...(m.fine || []).map(f => `m${m.d}×${f.P}`.toLowerCase()),
+      ];
+      return tokens.some(t => t.replace(/\s+/g, "").includes(q));
+    });
+  }
+
+  countNum.textContent = list.length;
+
+  if (!list.length) {
+    content.innerHTML = `<div class="empty">該当なし</div>`;
+    return;
+  }
+  content.innerHTML = `<div class="cards">${list.map(m => {
+    const c = m.coarse;
+    return `<div class="card" data-d="${m.d}">
+      <div class="card-head">
+        <div class="card-code">M${m.d}</div>
+        <div class="card-tag">P=${c.P} ${m.fine && m.fine.length ? `/ ${m.fine.map(f => f.P).join("/")}` : ""}</div>
+      </div>
+      <div class="card-name">並目 As=${c.As} mm² · 六角二面幅 ${m.hex.s} · キャップ六角穴 ${m.cap.s}</div>
+      <div class="card-stats">
+        <div><span class="lbl">d₂</span><span class="val">${c.d2}</span></div>
+        <div><span class="lbl">d₁</span><span class="val">${c.d1}</span></div>
+        <div><span class="lbl">As</span><span class="val">${c.As}</span></div>
+      </div>
+    </div>`;
+  }).join("")}</div>`;
+
+  content.querySelectorAll(".card").forEach(card => {
+    card.onclick = () => showMetricDetail(parseFloat(card.dataset.d));
+  });
+}
+
+function showMetricDetail(d) {
+  const m = METRIC.find(x => x.d === d);
+  if (!m) return;
+  $("modalCode").textContent = `M${m.d}`;
+
+  const c = m.coarse;
+  const fineRows = (m.fine || []).map(f => `
+    <tr><td>細目ピッチ P</td><td>${f.P} mm</td></tr>
+    <tr><td>　有効径 d₂</td><td>${f.d2} mm</td></tr>
+    <tr><td>　谷の径 d₁</td><td>${f.d1} mm</td></tr>
+    <tr><td>　応力断面積 As</td><td>${f.As} mm²</td></tr>
+  `).join("");
+
+  $("modalBody").innerHTML = `
+    <div class="modal-name">メートルねじ M${m.d}(JIS B 0205-4 / ISO 724)</div>
+
+    <div class="spec-section">
+      <div class="spec-section-title">ねじ寸法 (並目)</div>
+      <table class="spec-table">
+        <tr><td>呼び径 d</td><td>${m.d} mm</td></tr>
+        <tr><td>ピッチ P</td><td>${c.P} mm</td></tr>
+        <tr><td>有効径 d₂</td><td>${c.d2} mm</td></tr>
+        <tr><td>谷の径 d₁</td><td>${c.d1} mm</td></tr>
+        <tr><td>応力断面積 As</td><td>${c.As} mm²</td></tr>
+      </table>
+    </div>
+
+    ${(m.fine && m.fine.length) ? `
+    <div class="spec-section">
+      <div class="spec-section-title">細目</div>
+      <table class="spec-table">${fineRows}</table>
+    </div>` : ""}
+
+    <div class="spec-section">
+      <div class="spec-section-title">六角ボルト (JIS B 1180 first choice)</div>
+      <table class="spec-table">
+        <tr><td>二面幅 s</td><td>${m.hex.s} mm</td></tr>
+        <tr><td>頭部高さ k</td><td>${m.hex.k} mm</td></tr>
+      </table>
+    </div>
+
+    <div class="spec-section">
+      <div class="spec-section-title">六角穴付きボルト / キャップボルト (JIS B 1176)</div>
+      <table class="spec-table">
+        <tr><td>六角穴二面幅 s</td><td>${m.cap.s} mm</td></tr>
+        <tr><td>頭部径 dk</td><td>${m.cap.dk} mm</td></tr>
+        <tr><td>頭部高さ k</td><td>${m.cap.k} mm</td></tr>
+      </table>
+    </div>
+
+    <div class="spec-section">
+      <div class="spec-section-title">強度区分別 推奨締付トルク (K=0.20, F=0.7Rp×As)</div>
+      <div class="torque-grid">
+        <div class="th">区分</div>
+        <div class="th">軸力 [kN]</div>
+        <div class="th">トルク [N·m]</div>
+        ${["4.8","8.8","10.9","12.9","A2-70"].map(g => {
+          const s = STRENGTH.find(x => x.grade === g);
+          const F = 0.7 * s.Rp * c.As;
+          const T = 0.20 * F * m.d / 1000;
+          return `<div>${g}</div><div>${(F/1000).toFixed(2)}</div><div>${T.toFixed(1)}</div>`;
+        }).join("")}
+      </div>
+    </div>
+
+    <div class="spec-note">タップ下穴径(目安): 並目 ${(m.d - c.P).toFixed(2)} mm(d − P)。<br>
+    通し穴径: 並目 1級 ${(m.d + 0.3).toFixed(1)} / 2級 ${(m.d + 0.5).toFixed(1)} / 3級 ${(m.d + 1.0).toFixed(1)} mm(JIS B 1001)。</div>
+  `;
+  $("detailModal").classList.add("visible");
+}
+
+// ---------- Strength tab ----------
+function renderStrength() {
+  const filterRow = $("filterRow");
+  const content = $("contentArea");
+  const filterLabel = $("filterLabel");
+  const countNum = $("countNum");
+
+  filterRow.classList.remove("hidden");
+  const subs = [
+    { id: "", label: "すべて" },
+    { id: "carbon", label: "炭素鋼・合金鋼" },
+    { id: "stainless", label: "ステンレス" },
+    { id: "high", label: "高強度(8.8以上)" },
+  ];
+  filterRow.innerHTML = subs.map(s =>
+    `<button class="filter-chip ${currentFilter === s.id ? "active" : ""}" data-sub="${s.id}">${s.label}</button>`
+  ).join("");
+  filterRow.querySelectorAll(".filter-chip").forEach(b => {
+    b.onclick = () => { currentFilter = b.dataset.sub; render(); };
+  });
+
+  filterLabel.textContent = `— strength class ${currentFilter || "all"} —`;
+
+  let list = STRENGTH.filter(s => {
+    if (currentFilter === "carbon") return s.type === "carbon";
+    if (currentFilter === "stainless") return s.type === "stainless";
+    if (currentFilter === "high") return s.type === "carbon" && parseFloat(s.grade) >= 8;
+    return true;
+  });
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    list = list.filter(s =>
+      s.grade.toLowerCase().includes(q) ||
+      s.material.toLowerCase().includes(q) ||
+      (s.note || "").toLowerCase().includes(q)
+    );
+  }
+
+  countNum.textContent = list.length;
+  if (!list.length) {
+    content.innerHTML = `<div class="empty">該当なし</div>`;
+    return;
+  }
+
+  content.innerHTML = `<div class="cards">${list.map(s => `
+    <div class="card" data-grade="${s.grade}">
+      <div class="card-head">
+        <div class="card-code">${s.grade}${s.star ? ' <span style="color:var(--gold);font-size:13px;">★</span>' : ""}</div>
+        <div class="card-tag">${s.type === "stainless" ? "ISO 3506-1" : "ISO 898-1"}</div>
+      </div>
+      <div class="card-name">${s.material}</div>
+      <div class="card-stats">
+        <div><span class="lbl">Rm</span><span class="val">${s.Rm}</span> MPa</div>
+        <div><span class="lbl">Rp0.2</span><span class="val">${s.Rp}</span> MPa</div>
+        <div><span class="lbl">HV</span><span class="val">${s.hvMin}–${s.hvMax}</span></div>
+      </div>
+    </div>
+  `).join("")}</div>`;
+
+  content.querySelectorAll(".card").forEach(card => {
+    card.onclick = () => showStrengthDetail(card.dataset.grade);
+  });
+}
+
+function showStrengthDetail(grade) {
+  const s = STRENGTH.find(x => x.grade === grade);
+  if (!s) return;
+  $("modalCode").textContent = grade;
+
+  // HV → HRC simple approx
+  const hrcMin = hvToHrc(s.hvMin);
+  const hrcMax = hvToHrc(s.hvMax);
+
+  $("modalBody").innerHTML = `
+    <div class="modal-name">${s.material} ${s.type === "stainless" ? "/ ISO 3506-1" : "/ ISO 898-1 · JIS B 1051"}</div>
+
+    <div class="spec-section">
+      <div class="spec-section-title">機械的性質</div>
+      <table class="spec-table">
+        <tr><td>呼び 区分</td><td>${s.grade}</td></tr>
+        <tr><td>引張強さ Rm (最小)</td><td>${s.Rm} MPa</td></tr>
+        <tr><td>耐力 Rp0.2 (最小)</td><td>${s.Rp} MPa</td></tr>
+        <tr><td>降伏比 (Rp/Rm)</td><td>${(s.Rp / s.Rm).toFixed(2)}</td></tr>
+        <tr><td>伸び A (最小)</td><td>${s.A}%</td></tr>
+        <tr><td>硬度 HV</td><td>${s.hvMin}–${s.hvMax}</td></tr>
+        <tr><td>硬度 HRC (概算)</td><td>${hrcMin}–${hrcMax}</td></tr>
+        <tr><td>代表材質</td><td>${s.material}</td></tr>
+      </table>
+    </div>
+
+    <div class="spec-section">
+      <div class="spec-section-title">サイズ別 推奨締付トルク (K=0.20)</div>
+      <div class="torque-grid">
+        <div class="th">サイズ</div>
+        <div class="th">軸力 [kN]</div>
+        <div class="th">トルク [N·m]</div>
+        ${[6,8,10,12,16,20,24].map(d => {
+          const m = METRIC.find(x => x.d === d);
+          const F = 0.7 * s.Rp * m.coarse.As;
+          const T = 0.20 * F * d / 1000;
+          return `<div>M${d}</div><div>${(F/1000).toFixed(2)}</div><div>${T.toFixed(1)}</div>`;
+        }).join("")}
+      </div>
+    </div>
+
+    ${s.note ? `<div class="spec-note">${s.note}</div>` : ""}
+
+    <div class="spec-note">
+      <b>呼びの読み方:</b> ${s.type === "stainless"
+        ? `「${s.grade}」の前半(A2/A4)はオーステナイト系の区分(A2=Cr-Ni系=SUS304等、A4=Cr-Ni-Mo系=SUS316等)、後半の数字は引張強さの1/10(MPa)。`
+        : `「${s.grade}」の前半は引張強さの1/100(MPa)、後半×10で耐力/引張強さの比率(%)。例: 8.8 → Rm 800 MPa, Rp/Rm=0.8 → Rp 640 MPa。`}
+    </div>
+  `;
+  $("detailModal").classList.add("visible");
+}
+
+function hvToHrc(hv) {
+  if (hv < 240) return "—";
+  // 簡易換算 (ASTM E140 補間近似)
+  if (hv >= 940) return 68;
+  const table = [[240,21],[250,22],[260,24],[270,26],[280,27],[290,29],[300,30],[320,32],[340,34],[360,36],[380,38],[400,40],[420,42],[440,44],[460,46],[480,47],[500,49],[520,50],[540,52],[560,53],[580,54],[600,55],[640,57],[700,60],[800,64],[900,67]];
+  for (let i = 0; i < table.length - 1; i++) {
+    if (hv >= table[i][0] && hv < table[i+1][0]) {
+      const t = (hv - table[i][0]) / (table[i+1][0] - table[i][0]);
+      return Math.round(table[i][1] + t * (table[i+1][1] - table[i][1]));
+    }
+  }
+  return table[table.length-1][1];
+}
+
+// ---------- Torque tab ----------
+function renderTorque() {
+  $("filterRow").classList.add("hidden");
+  $("filterLabel").textContent = "— torque calculator —";
+  $("countNum").textContent = "calc";
+
+  const content = $("contentArea");
+
+  // build size options (including fine pitches)
+  let sizeOptions = "";
+  METRIC.forEach(m => {
+    sizeOptions += `<option value="${m.d}|coarse" ${torqueState.size === m.d && !torqueState.pitch ? "selected" : ""}>M${m.d}×${m.coarse.P} (並目)</option>`;
+    (m.fine || []).forEach(f => {
+      sizeOptions += `<option value="${m.d}|${f.P}" ${torqueState.size === m.d && torqueState.pitch === f.P ? "selected" : ""}>M${m.d}×${f.P} (細目)</option>`;
+    });
+  });
+
+  const gradeOptions = STRENGTH.map(s =>
+    `<option value="${s.grade}" ${torqueState.grade === s.grade ? "selected" : ""}>${s.grade} (Rm ${s.Rm} / Rp ${s.Rp})</option>`
+  ).join("");
+
+  content.innerHTML = `
+    <div class="calc-section">
+      <div class="calc-title">入力パラメータ</div>
+
+      <div class="calc-row">
+        <label>ねじ呼び</label>
+        <select id="sizeSel">${sizeOptions}</select>
+      </div>
+
+      <div class="calc-row">
+        <label>強度区分</label>
+        <select id="gradeSel">${gradeOptions}</select>
+      </div>
+
+      <div class="calc-row">
+        <label>摩擦状態</label>
+        <div class="friction-chips" id="frictionChips">
+          ${FRICTION.map(f =>
+            `<button class="friction-chip ${Math.abs(torqueState.K - f.K) < 0.001 ? "active" : ""}" data-k="${f.K}">${f.label} K=${f.K}</button>`
+          ).join("")}
+        </div>
+      </div>
+
+      <div class="calc-row">
+        <label>K (任意)</label>
+        <input type="number" id="kInput" value="${torqueState.K}" step="0.01" min="0.05" max="0.50">
+      </div>
+
+      <div class="calc-row">
+        <label>軸力比 (×Rp)</label>
+        <input type="number" id="ratioInput" value="${torqueState.ratio}" step="0.05" min="0.30" max="0.90">
+      </div>
+
+      <div id="calcOutput" class="calc-output"></div>
+
+      <div class="calc-note">
+        <b>計算式:</b> 推奨軸力 F = 軸力比 × Rp0.2 × As / 締付トルク T = K × F × d<br>
+        標準は軸力比 0.70(耐力の70%)。重要部は0.60〜0.65に下げる、繰返荷重・振動環境では更に低下を考慮。<br>
+        K は座面・ねじ部の合計摩擦を表す経験値。実機は試験測定が望ましい。
+      </div>
+    </div>
+
+    <div class="calc-section">
+      <div class="calc-title">参照表 — 推奨締付トルク [N·m] (並目)</div>
+      <div class="torque-grid" id="torqueRefGrid"></div>
+      <div class="calc-note">上で選んだ K と軸力比で再計算されます。現在の選択(サイズ × 区分)はハイライト表示。</div>
+    </div>
+  `;
+
+  $("sizeSel").onchange = (e) => {
+    const [d, p] = e.target.value.split("|");
+    torqueState.size = parseFloat(d);
+    torqueState.pitch = p === "coarse" ? null : parseFloat(p);
+    updateTorqueOutput();
+  };
+  $("gradeSel").onchange = (e) => {
+    torqueState.grade = e.target.value;
+    updateTorqueOutput();
+  };
+  $("kInput").oninput = (e) => {
+    const v = parseFloat(e.target.value);
+    if (!isNaN(v) && v > 0) {
+      torqueState.K = v;
+      // sync friction chips
+      document.querySelectorAll("#frictionChips .friction-chip").forEach(b =>
+        b.classList.toggle("active", Math.abs(parseFloat(b.dataset.k) - v) < 0.001)
+      );
+      updateTorqueOutput();
+    }
+  };
+  $("ratioInput").oninput = (e) => {
+    const v = parseFloat(e.target.value);
+    if (!isNaN(v) && v > 0 && v <= 1.5) {
+      torqueState.ratio = v;
+      updateTorqueOutput();
+    }
+  };
+  document.querySelectorAll("#frictionChips .friction-chip").forEach(b => {
+    b.onclick = () => {
+      torqueState.K = parseFloat(b.dataset.k);
+      document.querySelectorAll("#frictionChips .friction-chip").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      $("kInput").value = torqueState.K;
+      updateTorqueOutput();
+    };
+  });
+
+  updateTorqueOutput();
+}
+
+function updateTorqueOutput() {
+  const m = METRIC.find(x => x.d === torqueState.size);
+  if (!m) return;
+  const thread = findThread(torqueState.size, torqueState.pitch);
+  const s = STRENGTH.find(x => x.grade === torqueState.grade);
+  if (!thread || !s) return;
+
+  const F = torqueState.ratio * s.Rp * thread.As; // N
+  const T = torqueState.K * F * torqueState.size / 1000; // N·m
+  const stress = F / thread.As; // = ratio * Rp
+  const safety = s.Rp / stress;
+
+  $("calcOutput").innerHTML = `
+    <div class="calc-out-row">
+      <span class="key">ねじ呼び</span>
+      <span class="val">M${torqueState.size}×${thread.P}${thread.isFine ? " 細目" : ""}</span>
+    </div>
+    <div class="calc-out-row">
+      <span class="key">応力断面積 As</span>
+      <span class="val">${thread.As}<span class="unit">mm²</span></span>
+    </div>
+    <div class="calc-out-row">
+      <span class="key">区分 / 耐力 Rp0.2</span>
+      <span class="val">${s.grade} / ${s.Rp}<span class="unit">MPa</span></span>
+    </div>
+    <div class="calc-out-row">
+      <span class="key">推奨軸力 F</span>
+      <span class="val">${(F/1000).toFixed(2)}<span class="unit">kN</span></span>
+    </div>
+    <div class="calc-out-row" style="background:rgba(184,134,11,0.18);margin:6px -10px;padding:8px 10px;">
+      <span class="key" style="color:var(--gold);">締付トルク T</span>
+      <span class="val" style="font-size:22px;color:var(--gold);">${T.toFixed(T < 10 ? 2 : 1)}<span class="unit">N·m</span></span>
+    </div>
+    <div class="calc-out-row">
+      <span class="key">引張応力</span>
+      <span class="val">${stress.toFixed(0)}<span class="unit">MPa</span></span>
+    </div>
+    <div class="calc-out-row">
+      <span class="key">耐力に対する余裕</span>
+      <span class="val">×${safety.toFixed(2)}</span>
+    </div>
+  `;
+
+  // reference grid
+  const sizes = [4,5,6,8,10,12,14,16,18,20,22,24,27,30];
+  const grades = ["4.8", "8.8", "10.9", "12.9", "A2-70"];
+  let grid = `<div class="th">サイズ</div>` + grades.map(g => `<div class="th">${g}</div>`).join("");
+  sizes.forEach(d => {
+    const item = METRIC.find(x => x.d === d);
+    if (!item) return;
+    grid += `<div style="background:var(--line-soft);">M${d}</div>`;
+    grades.forEach(g => {
+      const sg = STRENGTH.find(x => x.grade === g);
+      const Fr = torqueState.ratio * sg.Rp * item.coarse.As;
+      const Tr = torqueState.K * Fr * d / 1000;
+      const highlight = (d === torqueState.size && g === torqueState.grade)
+        ? "background:rgba(139,0,0,0.10);font-weight:bold;" : "";
+      grid += `<div style="${highlight}">${Tr.toFixed(Tr < 10 ? 2 : 1)}</div>`;
+    });
+  });
+  $("torqueRefGrid").innerHTML = grid;
+  $("torqueRefGrid").style.gridTemplateColumns = `0.7fr repeat(${grades.length}, 1fr)`;
+}
+
+// ---------- Inch tab ----------
+function renderInch() {
+  const filterRow = $("filterRow");
+  const content = $("contentArea");
+  const filterLabel = $("filterLabel");
+  const countNum = $("countNum");
+
+  filterRow.classList.remove("hidden");
+  const subs = [
+    { id: "", label: "すべて" },
+    { id: "UNC", label: "UNC (並目)" },
+    { id: "UNF", label: "UNF (細目)" },
+  ];
+  filterRow.innerHTML = subs.map(s =>
+    `<button class="filter-chip ${currentFilter === s.id ? "active" : ""}" data-sub="${s.id}">${s.label}</button>`
+  ).join("");
+  filterRow.querySelectorAll(".filter-chip").forEach(b => {
+    b.onclick = () => { currentFilter = b.dataset.sub; render(); };
+  });
+
+  filterLabel.textContent = `— inch ${currentFilter || "all"} —`;
+
+  let list = INCH.filter(i => !currentFilter || i.group === currentFilter);
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase().replace(/\s+/g, "");
+    list = list.filter(i => i.size.toLowerCase().replace(/\s+/g, "").includes(q));
+  }
+
+  countNum.textContent = list.length;
+  if (!list.length) {
+    content.innerHTML = `<div class="empty">該当なし</div>`;
+    return;
+  }
+
+  content.innerHTML = `<div class="cards">${list.map(i => `
+    <div class="card" data-size="${encodeURIComponent(i.size)}">
+      <div class="card-head">
+        <div class="card-code">${i.size}</div>
+        <div class="card-tag">${i.group} · ${i.tpi} TPI</div>
+      </div>
+      <div class="card-name">外径 ${i.d} mm / ピッチ ${i.P} mm</div>
+      <div class="card-stats">
+        <div><span class="lbl">d</span><span class="val">${i.d}</span> mm</div>
+        <div><span class="lbl">P</span><span class="val">${i.P}</span> mm</div>
+        <div><span class="lbl">As</span><span class="val">${i.As}</span> mm²</div>
+      </div>
+    </div>
+  `).join("")}</div>`;
+
+  content.querySelectorAll(".card").forEach(card => {
+    card.onclick = () => showInchDetail(decodeURIComponent(card.dataset.size));
+  });
+}
+
+function showInchDetail(sizeKey) {
+  const i = INCH.find(x => x.size === sizeKey);
+  if (!i) return;
+  $("modalCode").textContent = i.size;
+
+  const dInch = (i.d / 25.4).toFixed(4);
+  const pInch = (1 / i.tpi).toFixed(4);
+
+  $("modalBody").innerHTML = `
+    <div class="modal-name">${i.group} ねじ — ASME B1.1 / ANSI</div>
+
+    <div class="spec-section">
+      <div class="spec-section-title">寸法</div>
+      <table class="spec-table">
+        <tr><td>呼び</td><td>${i.size}</td></tr>
+        <tr><td>区分</td><td>${i.group}</td></tr>
+        <tr><td>ねじ山数 (TPI)</td><td>${i.tpi}</td></tr>
+        <tr><td>外径 d</td><td>${i.d} mm (${dInch}")</td></tr>
+        <tr><td>ピッチ P</td><td>${i.P} mm (${pInch}")</td></tr>
+        <tr><td>応力断面積 As</td><td>${i.As} mm²</td></tr>
+      </table>
+    </div>
+
+    <div class="spec-section">
+      <div class="spec-section-title">SAE強度区分別 推奨締付トルク (K=0.20, F=0.7Rp×As)</div>
+      <div class="torque-grid">
+        <div class="th">SAE Grade</div>
+        <div class="th">Rp [MPa]</div>
+        <div class="th">トルク [N·m]</div>
+        ${[
+          { g: "Grade 2", Rp: 393 },
+          { g: "Grade 5", Rp: 634 },
+          { g: "Grade 8", Rp: 896 },
+        ].map(x => {
+          const F = 0.7 * x.Rp * i.As;
+          const T = 0.20 * F * i.d / 1000;
+          return `<div>${x.g}</div><div>${x.Rp}</div><div>${T.toFixed(1)}</div>`;
+        }).join("")}
+      </div>
+    </div>
+
+    <div class="spec-note">
+      <b>SAE Grade対応(概算):</b><br>
+      Grade 2 ≒ メートル4.8 / Grade 5 ≒ メートル8.8 / Grade 8 ≒ メートル10.9。<br>
+      Rp 値は1/4〜3/4インチ範囲の代表値。詳細はSAE J429参照。
+    </div>
+  `;
+  $("detailModal").classList.add("visible");
+}
+
+// =====================================================
+// EVENTS
+// =====================================================
+document.querySelectorAll(".tab-btn").forEach(b => {
+  b.onclick = () => {
+    currentTab = b.dataset.tab;
+    currentFilter = "";
+    render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+});
+
+$("searchInput").oninput = (e) => {
+  searchQuery = e.target.value;
+  $("clearBtn").classList.toggle("visible", !!searchQuery);
+  render();
+};
+$("clearBtn").onclick = () => {
+  $("searchInput").value = "";
+  searchQuery = "";
+  $("clearBtn").classList.remove("visible");
+  render();
+};
+
+$("modalClose").onclick = () => $("detailModal").classList.remove("visible");
+$("detailModal").onclick = (e) => {
+  if (e.target.id === "detailModal") $("detailModal").classList.remove("visible");
+};
+
+$("menuBtn").onclick = () => $("menuModal").classList.add("visible");
+$("menuCloseBtn").onclick = () => $("menuModal").classList.remove("visible");
+$("menuModal").onclick = (e) => {
+  if (e.target.id === "menuModal") $("menuModal").classList.remove("visible");
+};
+
+document.querySelectorAll("[data-action]").forEach(item => {
+  item.onclick = () => {
+    const action = item.dataset.action;
+    $("menuModal").classList.remove("visible");
+    if (action === "about") {
+      $("aboutModal").classList.add("visible");
+    } else if (action === "steel-app") {
+      window.location.href = "../";
+    }
+  };
+});
+
+$("aboutCloseBtn").onclick = () => $("aboutModal").classList.remove("visible");
+$("aboutModal").onclick = (e) => {
+  if (e.target.id === "aboutModal") $("aboutModal").classList.remove("visible");
+};
+
+// service worker
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+  });
+}
+
+// init
+render();
+</script>
+</body>
+</html>
