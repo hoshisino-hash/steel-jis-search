@@ -1587,16 +1587,24 @@ function showMetricDetail(d) {
     </div>
 
     <div class="spec-section">
-      <div class="spec-section-title">強度区分別 推奨${T("締付トルク","締付トルク")}${I("締付トルク")} (K=0.20, F=0.7Rp×As)</div>
-      <div class="torque-grid">
-        <div class="th">${T("強度区分","区分")}${I("強度区分")}</div>
+      <div class="spec-section-title">材質別 推奨${T("締付トルク","締付トルク")}${I("締付トルク")} (K=0.20, F=0.7Rp×As)</div>
+      <div style="font-size:11px;color:var(--ink-faint);margin-bottom:6px;">同じM${m.d}でも、材質(強度区分)が違えば締付トルクは2〜3倍違います。</div>
+      <div class="torque-grid" style="grid-template-columns: 1.4fr 0.8fr 1fr;">
+        <div class="th">材質 (区分)</div>
         <div class="th">${T("軸力","軸力")} [kN]</div>
         <div class="th">トルク [N·m]</div>
-        ${["4.8","8.8","10.9","12.9","A2-70"].map(g => {
-          const s = STRENGTH.find(x => x.grade === g);
+        ${[
+          { g: "4.8",   label: "一般鉄ボルト"      },
+          { g: "8.8",   label: "高張力ボルト (S45C)" },
+          { g: "10.9",  label: "合金鋼 (SCM435)"   },
+          { g: "12.9",  label: "合金鋼 (SCM440)"   },
+          { g: "A2-70", label: "SUS304 ステンレス" },
+          { g: "A4-70", label: "SUS316 ステンレス" },
+        ].map(x => {
+          const s = STRENGTH.find(y => y.grade === x.g);
           const F = 0.7 * s.Rp * c.As;
           const T = 0.20 * F * m.d / 1000;
-          return `<div>${g}</div><div>${(F/1000).toFixed(2)}</div><div>${T.toFixed(1)}</div>`;
+          return `<div style="text-align:left;padding-left:6px;font-family:inherit;font-size:11px;">${x.label}<br><span style="font-family:'Courier New',monospace;color:var(--ink-faint);">${x.g}</span></div><div>${(F/1000).toFixed(2)}</div><div style="font-weight:bold;">${T.toFixed(1)}</div>`;
         }).join("")}
       </div>
     </div>
@@ -1776,9 +1784,29 @@ function renderTorque() {
     });
   });
 
+  // 「8.8」「A2-70」を「中炭素鋼」「SUS304系」のように見せる短縮材質名
+  const shortMat = (s) => {
+    if (s.grade.startsWith("A4")) return "SUS316系ステンレス";
+    if (s.grade.startsWith("A2")) return "SUS304系ステンレス";
+    if (parseFloat(s.grade) >= 10) return "合金鋼(SCM435等) 焼入焼戻";
+    if (parseFloat(s.grade) >= 8)  return "中炭素鋼(S45C等) 焼入焼戻";
+    if (parseFloat(s.grade) >= 5)  return "中炭素鋼";
+    return "低炭素鋼";
+  };
+
   const gradeOptions = STRENGTH.map(s =>
-    `<option value="${s.grade}" ${torqueState.grade === s.grade ? "selected" : ""}>${s.grade} (Rm ${s.Rm} / Rp ${s.Rp})</option>`
+    `<option value="${s.grade}" ${torqueState.grade === s.grade ? "selected" : ""}>${s.grade} — ${shortMat(s)}  [Rp ${s.Rp} MPa]</option>`
   ).join("");
+
+  // 現場でよく出る材質 → 強度区分 のクイック対応表
+  const MATERIAL_QUICK = [
+    { key: "一般鉄ボルト",        grade: "4.8",   sub: "ホームセンター・無刻印が多い" },
+    { key: "高張力ボルト",        grade: "8.8",   sub: "頭刻印「8.8」/ S45C相当 / 最も普及" },
+    { key: "超高張力ボルト",      grade: "10.9",  sub: "頭刻印「10.9」/ SCM435相当 / 重要部" },
+    { key: "極高張力ボルト",      grade: "12.9",  sub: "頭刻印「12.9」/ SCM440相当 / 最高強度" },
+    { key: "SUS304ステンレス",   grade: "A2-70", sub: "頭刻印「A2-70」/ 一般ステンレス" },
+    { key: "SUS316ステンレス",   grade: "A4-70", sub: "頭刻印「A4-70」/ 海水・塩害用" },
+  ];
 
   content.innerHTML = `
     <div class="calc-section">
@@ -1786,8 +1814,10 @@ function renderTorque() {
 
       <div class="plain-summary" style="margin:0 0 14px;">
         <span class="ps-lbl">使い方</span>
-        ①ねじサイズ ②強度区分(ボルト頭の刻印) ③摩擦状態(乾燥/グリース等) を選ぶと、
-        トルクレンチで合わせるべき<b>締付トルク(N·m)</b>と、そのとき実際に部材を押し付ける力=<b>軸力(kN)</b>が下に出ます。
+        ①ねじサイズ ②<b>ボルトの材質</b>(=強度区分/ボルト頭の刻印) ③摩擦状態 を選ぶと、
+        トルクレンチで合わせるべき<b>締付トルク(N·m)</b>と、そのとき部材を押し付ける力=<b>軸力(kN)</b>が下に出ます。
+        <br><b style="color:var(--accent);">トルク値は材質で大きく変わります。</b>
+        例: M10 → 鉄4.8で28 N·m、鉄8.8で52 N·m、SUS304で37 N·m、合金鋼10.9で76 N·m。
       </div>
 
       <div class="calc-row">
@@ -1795,8 +1825,19 @@ function renderTorque() {
         <select id="sizeSel">${sizeOptions}</select>
       </div>
 
+      <div class="calc-row" style="grid-template-columns: 100px 1fr; align-items:start;">
+        <label>材質から選ぶ${I("強度区分")}<br><span style="font-size:10px;color:var(--ink-faint);">ボルトの種類が決まっていればこちら</span></label>
+        <div class="friction-chips" style="flex-wrap:wrap;">
+          ${MATERIAL_QUICK.map(m => `
+            <button class="friction-chip mat-quick ${torqueState.grade === m.grade ? "active" : ""}" data-grade="${m.grade}" title="${m.sub}">
+              ${m.key} → ${m.grade}
+            </button>
+          `).join("")}
+        </div>
+      </div>
+
       <div class="calc-row">
-        <label>強度区分${I("強度区分")}</label>
+        <label>強度区分${I("強度区分")}<br><span style="font-size:10px;color:var(--ink-faint);">細かく指定する場合</span></label>
         <select id="gradeSel">${gradeOptions}</select>
       </div>
 
@@ -1843,8 +1884,22 @@ function renderTorque() {
   };
   $("gradeSel").onchange = (e) => {
     torqueState.grade = e.target.value;
+    // sync material quick buttons
+    document.querySelectorAll(".mat-quick").forEach(b =>
+      b.classList.toggle("active", b.dataset.grade === torqueState.grade)
+    );
     updateTorqueOutput();
   };
+  // material quick-select buttons
+  document.querySelectorAll(".mat-quick").forEach(b => {
+    b.onclick = () => {
+      torqueState.grade = b.dataset.grade;
+      document.querySelectorAll(".mat-quick").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      $("gradeSel").value = torqueState.grade;
+      updateTorqueOutput();
+    };
+  });
   $("kInput").oninput = (e) => {
     const v = parseFloat(e.target.value);
     if (!isNaN(v) && v > 0) {
@@ -1888,18 +1943,36 @@ function updateTorqueOutput() {
   const stress = F / thread.As; // = ratio * Rp
   const safety = s.Rp / stress;
 
+  // 同じサイズで材質を変えた場合の差を見せる(材質と TORQUE の関係を視覚化)
+  const cmpGrades = ["4.8", "8.8", "10.9", "A2-70"];
+  const cmpRows = cmpGrades.map(g => {
+    const sg = STRENGTH.find(x => x.grade === g);
+    if (!sg) return "";
+    const Fg = torqueState.ratio * sg.Rp * thread.As;
+    const Tg = torqueState.K * Fg * torqueState.size / 1000;
+    const isSel = g === torqueState.grade;
+    const matShort = g === "4.8" ? "一般鉄" : g === "8.8" ? "鉄8.8" : g === "10.9" ? "合金鋼10.9" : "SUS304";
+    return `<div class="calc-out-row" style="${isSel ? 'background:rgba(45,106,63,0.2);' : 'opacity:0.6;'}padding:3px 0;">
+      <span class="key" style="font-size:11px;">${matShort} (${g})</span>
+      <span class="val" style="font-size:13px;">${Tg.toFixed(Tg < 10 ? 2 : 0)}<span class="unit">N·m</span></span>
+    </div>`;
+  }).join("");
+
   $("calcOutput").innerHTML = `
     <div class="calc-out-row">
-      <span class="key">ねじ呼び</span>
+      <span class="key">ねじ呼び (径)</span>
       <span class="val">M${torqueState.size}×${thread.P}${thread.isFine ? " 細目" : ""}</span>
+    </div>
+    <div class="calc-out-row" style="background:rgba(255,255,255,0.06);margin:4px -10px;padding:6px 10px;">
+      <span class="key" style="color:#e8d59d;">材質 / 強度区分</span>
+      <span class="val" style="text-align:right;">
+        ${s.material}<br>
+        <span style="font-size:12px;color:rgba(255,255,255,0.7);">区分 ${s.grade} / 耐力 ${s.Rp} MPa</span>
+      </span>
     </div>
     <div class="calc-out-row">
       <span class="key">応力断面積 As</span>
       <span class="val">${thread.As}<span class="unit">mm²</span></span>
-    </div>
-    <div class="calc-out-row">
-      <span class="key">区分 / 耐力 Rp0.2</span>
-      <span class="val">${s.grade} / ${s.Rp}<span class="unit">MPa</span></span>
     </div>
     <div class="calc-out-row">
       <span class="key">推奨軸力 F</span>
@@ -1909,7 +1982,13 @@ function updateTorqueOutput() {
       <span class="key" style="color:var(--gold);">締付トルク T</span>
       <span class="val" style="font-size:22px;color:var(--gold);">${T.toFixed(T < 10 ? 2 : 1)}<span class="unit">N·m</span></span>
     </div>
-    <div class="calc-out-row">
+    <div style="margin:8px -10px 4px;padding:6px 10px 2px;border-top:1px dotted rgba(255,255,255,0.2);">
+      <div style="font-size:10px;color:rgba(255,255,255,0.6);font-family:Georgia,serif;font-style:italic;letter-spacing:0.1em;margin-bottom:3px;">
+        同じM${torqueState.size}・同じ条件で材質を変えるとトルクはこう変わる:
+      </div>
+      ${cmpRows}
+    </div>
+    <div class="calc-out-row" style="margin-top:6px;">
       <span class="key">引張応力</span>
       <span class="val">${stress.toFixed(0)}<span class="unit">MPa</span></span>
     </div>
@@ -1919,25 +1998,34 @@ function updateTorqueOutput() {
     </div>
   `;
 
-  // reference grid
+  // reference grid (材質別×サイズ別 推奨トルク)
   const sizes = [4,5,6,8,10,12,14,16,18,20,22,24,27,30];
-  const grades = ["4.8", "8.8", "10.9", "12.9", "A2-70"];
-  let grid = `<div class="th">サイズ</div>` + grades.map(g => `<div class="th">${g}</div>`).join("");
+  const gradeCols = [
+    { g: "4.8",   short: "一般鉄",   sub: "4.8" },
+    { g: "8.8",   short: "鉄8.8",   sub: "S45C相当" },
+    { g: "10.9",  short: "10.9",    sub: "SCM435相当" },
+    { g: "12.9",  short: "12.9",    sub: "SCM440相当" },
+    { g: "A2-70", short: "SUS304",  sub: "A2-70" },
+    { g: "A4-70", short: "SUS316",  sub: "A4-70" },
+  ];
+  let grid = `<div class="th">サイズ</div>` +
+    gradeCols.map(c => `<div class="th" style="line-height:1.2;">${c.short}<br><span style="font-size:9px;opacity:0.7;">${c.sub}</span></div>`).join("");
   sizes.forEach(d => {
     const item = METRIC.find(x => x.d === d);
     if (!item) return;
-    grid += `<div style="background:var(--line-soft);">M${d}</div>`;
-    grades.forEach(g => {
-      const sg = STRENGTH.find(x => x.grade === g);
+    grid += `<div style="background:var(--line-soft);font-weight:bold;">M${d}</div>`;
+    gradeCols.forEach(col => {
+      const sg = STRENGTH.find(x => x.grade === col.g);
       const Fr = torqueState.ratio * sg.Rp * item.coarse.As;
       const Tr = torqueState.K * Fr * d / 1000;
-      const highlight = (d === torqueState.size && g === torqueState.grade)
-        ? "background:rgba(139,0,0,0.10);font-weight:bold;" : "";
-      grid += `<div style="${highlight}">${Tr.toFixed(Tr < 10 ? 2 : 1)}</div>`;
+      const highlight = (d === torqueState.size && col.g === torqueState.grade)
+        ? "background:rgba(139,0,0,0.12);font-weight:bold;color:var(--accent);" : "";
+      grid += `<div style="${highlight}">${Tr.toFixed(Tr < 10 ? 2 : 0)}</div>`;
     });
   });
   $("torqueRefGrid").innerHTML = grid;
-  $("torqueRefGrid").style.gridTemplateColumns = `0.7fr repeat(${grades.length}, 1fr)`;
+  $("torqueRefGrid").style.gridTemplateColumns = `0.5fr repeat(${gradeCols.length}, 1fr)`;
+  $("torqueRefGrid").style.fontSize = "11px";
 }
 
 // ---------- Inch tab ----------
