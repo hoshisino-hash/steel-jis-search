@@ -675,6 +675,281 @@
     font-style: italic;
     letter-spacing: 0.1em;
   }
+
+  /* ===== Beginner-friendly helpers ===== */
+
+  /* Per-tab intro banner */
+  .intro-banner {
+    background: rgba(45, 106, 63, 0.06);
+    border-bottom: 1px solid var(--line-soft);
+    padding: 10px 16px 12px;
+  }
+  .intro-banner .ib-title {
+    font-size: 12px;
+    color: var(--ok);
+    font-family: Georgia, serif;
+    font-style: italic;
+    letter-spacing: 0.1em;
+    margin-bottom: 3px;
+  }
+  .intro-banner .ib-text {
+    font-size: 13px;
+    color: var(--ink-dim);
+    line-height: 1.65;
+  }
+  .intro-banner .ib-toggle {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 12px;
+    padding: 4px 0 0;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .intro-banner .ib-more {
+    display: none;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--line);
+    font-size: 12px;
+    color: var(--ink-dim);
+    line-height: 1.7;
+  }
+  .intro-banner.open .ib-more { display: block; }
+  .intro-banner.open .ib-toggle::before { content: "▾ "; }
+  .intro-banner:not(.open) .ib-toggle::before { content: "▸ "; }
+
+  /* Inline clickable term -> popover */
+  .term {
+    border-bottom: 1px dotted var(--accent);
+    color: var(--accent);
+    cursor: help;
+    text-decoration: none;
+  }
+
+  .info-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: var(--ink-faint);
+    color: var(--bg);
+    font-size: 11px;
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    margin-left: 5px;
+    vertical-align: 1px;
+    line-height: 1;
+    padding: 0;
+  }
+  .info-btn:active { background: var(--ink); }
+
+  /* Plain-language summary at top of detail modal */
+  .plain-summary {
+    background: rgba(45, 106, 63, 0.07);
+    border-left: 3px solid var(--ok);
+    padding: 11px 13px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--ink-dim);
+    line-height: 1.75;
+  }
+  .plain-summary .ps-lbl {
+    display: block;
+    font-size: 10px;
+    font-family: Georgia, serif;
+    font-style: italic;
+    color: var(--ok);
+    letter-spacing: 0.12em;
+    margin-bottom: 5px;
+  }
+  .plain-summary b { color: var(--ink); }
+
+  /* SVG bolt anatomy diagram */
+  .bolt-diagram {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    padding: 14px 12px;
+    margin: 8px 0 14px;
+    text-align: center;
+  }
+  .bolt-diagram svg { max-width: 100%; height: auto; }
+  .bolt-diagram .caption {
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-top: 6px;
+    font-style: italic;
+    font-family: Georgia, serif;
+  }
+
+  /* Glossary cards */
+  .term-card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--gold);
+    padding: 11px 13px;
+    margin-bottom: 8px;
+  }
+  .term-card .tc-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .term-card .tc-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .term-card .tc-sym {
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+  .term-card .tc-def {
+    font-size: 12.5px;
+    color: var(--ink-dim);
+    line-height: 1.7;
+  }
+  .term-card .tc-example {
+    font-size: 11px;
+    color: var(--ink-faint);
+    font-family: "Courier New", monospace;
+    margin-top: 5px;
+    font-style: italic;
+    padding-left: 8px;
+    border-left: 2px solid var(--line);
+  }
+
+  /* Info popover (small bottom-sheet) */
+  .info-pop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 250;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .info-pop.visible { display: flex; animation: fadeIn 0.2s; }
+  .info-pop .ip-body {
+    background: var(--bg);
+    width: 100%;
+    max-width: 600px;
+    border-top: 4px solid var(--gold);
+    padding: 16px 18px 22px;
+    animation: slideUp 0.25s;
+  }
+  .info-pop .ip-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 6px;
+  }
+  .info-pop .ip-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .info-pop .ip-sym {
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+  .info-pop .ip-def {
+    font-size: 13.5px;
+    color: var(--ink-dim);
+    line-height: 1.75;
+  }
+  .info-pop .ip-example {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: var(--line-soft);
+    font-size: 12px;
+    color: var(--ink-dim);
+    font-family: "Courier New", monospace;
+    border-radius: 2px;
+  }
+
+  /* Welcome modal accents */
+  .welcome-modal .modal { border-top-color: var(--accent); }
+  .welcome-section { margin-bottom: 16px; }
+  .welcome-section h4 {
+    font-size: 13px;
+    color: var(--ink);
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 3px;
+    letter-spacing: 0.05em;
+  }
+  .welcome-section p {
+    font-size: 13px;
+    color: var(--ink-dim);
+    line-height: 1.75;
+  }
+  .welcome-section .tab-explain {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--line-soft);
+    font-size: 12.5px;
+  }
+  .welcome-section .tab-explain:last-child { border-bottom: none; }
+  .welcome-section .tab-explain .badge {
+    flex-shrink: 0;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 3px 9px;
+    font-size: 11px;
+    font-family: Georgia, serif;
+    font-style: italic;
+    letter-spacing: 0.05em;
+    border-radius: 2px;
+    min-width: 60px;
+    text-align: center;
+  }
+  .welcome-section .tab-explain .te-text { color: var(--ink-dim); line-height: 1.7; }
+  .welcome-section .tab-explain .te-text b { color: var(--ink); }
+
+  .start-btn {
+    display: block;
+    width: 100%;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 12px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    margin-top: 8px;
+    border-radius: 2px;
+  }
+  .start-btn:active { background: #6b0000; }
+
+  .skip-link {
+    display: block;
+    text-align: center;
+    background: none;
+    border: none;
+    color: var(--ink-faint);
+    font-family: inherit;
+    font-size: 12px;
+    padding: 8px;
+    margin-top: 4px;
+    cursor: pointer;
+    text-decoration: underline;
+  }
 </style>
 </head>
 <body>
@@ -700,6 +975,8 @@
   <button class="tab-btn" data-tab="torque">締付トルク<span class="sub">TORQUE</span></button>
   <button class="tab-btn" data-tab="inch">インチ<span class="sub">UNC/UNF</span></button>
 </div>
+
+<div class="intro-banner" id="introBanner"></div>
 
 <div class="filter-row" id="filterRow"></div>
 
@@ -730,9 +1007,17 @@
       <div class="menu-title">メニュー</div>
       <button class="modal-close" id="menuCloseBtn">×</button>
     </div>
+    <button class="menu-item" data-action="welcome">
+      <span class="icon">★</span>
+      <div class="label-wrap">はじめての方へ<span class="sub">3分でわかる使い方ガイド</span></div>
+    </button>
+    <button class="menu-item" data-action="glossary">
+      <span class="icon">⌥</span>
+      <div class="label-wrap">用語集<span class="sub">専門用語をやさしく解説</span></div>
+    </button>
     <button class="menu-item" data-action="about">
       <span class="icon">⚐</span>
-      <div class="label-wrap">このアプリについて<span class="sub">使い方・出典・注意事項</span></div>
+      <div class="label-wrap">このアプリについて<span class="sub">機能・出典・注意事項</span></div>
     </button>
     <button class="menu-item" data-action="steel-app">
       <span class="icon">⌕</span>
@@ -784,6 +1069,109 @@
         <li>ISO 898-1:2013 / ISO 3506-1:2009 / ASME B1.1-2003</li>
       </ul>
     </div>
+  </div>
+</div>
+
+<!-- Welcome / Guide modal -->
+<div class="modal-bg welcome-modal" id="welcomeModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-code" style="font-size:17px;">はじめての方へ</div>
+      <button class="modal-close" id="welcomeCloseBtn">×</button>
+    </div>
+    <div class="about-body">
+
+      <div class="welcome-section">
+        <h4>このアプリは何?</h4>
+        <p><b>ボルト・ねじの仕様を、現場でサッと調べるためのスマホアプリ</b>です。
+        「このボルトはどのくらいの強さ?」「どれくらいの力で締めればいい?」「どのサイズのスパナを使う?」といった日常的な疑問に、JIS規格(日本の工業規格)に基づいて答えます。</p>
+      </div>
+
+      <div class="welcome-section">
+        <h4>ボルトの基本(30秒で)</h4>
+        <div class="bolt-diagram">
+          <svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ボルト各部の名称">
+            <!-- head -->
+            <polygon points="40,30 80,15 120,30 120,55 80,70 40,55" fill="#e8e3d8" stroke="#1a1a1a" stroke-width="1.5"/>
+            <!-- shaft (smooth) -->
+            <rect x="120" y="33" width="50" height="22" fill="#f4f1ea" stroke="#1a1a1a" stroke-width="1.5"/>
+            <!-- threaded -->
+            <rect x="170" y="33" width="160" height="22" fill="#fff" stroke="#1a1a1a" stroke-width="1.5"/>
+            <!-- thread lines -->
+            <g stroke="#1a1a1a" stroke-width="0.8" fill="none">
+              <path d="M178,33 L182,55 M186,33 L190,55 M194,33 L198,55 M202,33 L206,55 M210,33 L214,55 M218,33 L222,55 M226,33 L230,55 M234,33 L238,55 M242,33 L246,55 M250,33 L254,55 M258,33 L262,55 M266,33 L270,55 M274,33 L278,55 M282,33 L286,55 M290,33 L294,55 M298,33 L302,55 M306,33 L310,55 M314,33 L318,55 M322,33 L326,55"/>
+            </g>
+            <!-- labels -->
+            <text x="80" y="90" text-anchor="middle" font-size="10" font-family="serif" fill="#1a1a1a">頭部</text>
+            <text x="80" y="103" text-anchor="middle" font-size="9" font-family="serif" fill="#8a8a8a" font-style="italic">スパナで掴む</text>
+            <text x="145" y="90" text-anchor="middle" font-size="10" font-family="serif" fill="#1a1a1a">軸部</text>
+            <text x="145" y="103" text-anchor="middle" font-size="9" font-family="serif" fill="#8a8a8a" font-style="italic">なめらか</text>
+            <text x="250" y="90" text-anchor="middle" font-size="10" font-family="serif" fill="#1a1a1a">ねじ部 (ねじ山)</text>
+            <text x="250" y="103" text-anchor="middle" font-size="9" font-family="serif" fill="#8a8a8a" font-style="italic">穴にねじ込む部分</text>
+            <!-- diameter arrows -->
+            <line x1="250" y1="22" x2="250" y2="33" stroke="#8b0000" stroke-width="0.8"/>
+            <line x1="250" y1="55" x2="250" y2="66" stroke="#8b0000" stroke-width="0.8"/>
+            <text x="258" y="46" font-size="9" font-family="serif" fill="#8b0000" font-style="italic">d(外径)</text>
+            <!-- pitch -->
+            <line x1="180" y1="68" x2="188" y2="68" stroke="#003399" stroke-width="0.8" marker-end="url(#a)"/>
+            <text x="200" y="72" font-size="9" font-family="serif" fill="#003399" font-style="italic">P=ピッチ</text>
+          </svg>
+          <div class="caption">「M10」=外径(d)が約10mm のボルト。「P=1.5」=ねじ山の間隔(ピッチ)が1.5mm。</div>
+        </div>
+      </div>
+
+      <div class="welcome-section">
+        <h4>4つのタブの使い分け</h4>
+        <div class="tab-explain">
+          <span class="badge">寸法</span>
+          <span class="te-text"><b>「M8 のスパナは何mm?」「下穴は何mmで開ける?」</b>といった寸法の疑問に。M2〜M42 すべて。</span>
+        </div>
+        <div class="tab-explain">
+          <span class="badge">強度区分</span>
+          <span class="te-text"><b>「ボルト頭に "8.8" と刻印がある。どのくらい強い?」</b>を調べる場所。数字の意味、材質、硬さがわかります。</span>
+        </div>
+        <div class="tab-explain">
+          <span class="badge">締付トルク</span>
+          <span class="te-text"><b>「M10 を8.8で締めるとき、何ニュートン・メートル?」</b>をその場で計算。トルクレンチの設定値の目安に。</span>
+        </div>
+        <div class="tab-explain">
+          <span class="badge">インチ</span>
+          <span class="te-text"><b>「輸入機器の "1/4-20 UNC" は何mmのねじ?」</b>。インチねじをミリに換算。</span>
+        </div>
+      </div>
+
+      <div class="welcome-section">
+        <h4>困ったら</h4>
+        <p>表のなかの<span style="color:var(--accent);border-bottom:1px dotted var(--accent);">点線が引かれた青字</span>や、丸い<span class="info-btn" style="background:var(--ink-faint);">i</span>マークをタップすると、その用語のやさしい説明が出ます。
+        メニュー(右上 ≡)から<b>「用語集」</b>を開けば、専門用語の一覧解説も読めます。</p>
+      </div>
+
+      <button class="start-btn" id="welcomeStartBtn">アプリを使ってみる</button>
+      <button class="skip-link" id="welcomeSkipBtn">次回から表示しない</button>
+    </div>
+  </div>
+</div>
+
+<!-- Glossary modal -->
+<div class="modal-bg" id="glossaryModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-code" style="font-size:17px;">用語集</div>
+      <button class="modal-close" id="glossaryCloseBtn">×</button>
+    </div>
+    <div class="modal-body" id="glossaryBody"></div>
+  </div>
+</div>
+
+<!-- Term info popover (one-shot) -->
+<div class="info-pop" id="infoPop">
+  <div class="ip-body">
+    <div class="ip-head">
+      <div class="ip-name" id="ipName"></div>
+      <div class="ip-sym" id="ipSym"></div>
+    </div>
+    <div class="ip-def" id="ipDef"></div>
+    <div class="ip-example" id="ipExample" style="display:none;"></div>
   </div>
 </div>
 
@@ -885,6 +1273,57 @@ const FRICTION = [
   { K: 0.12, label: "MoS₂" },
 ];
 
+// 用語集 (やさしい説明)
+const GLOSSARY = {
+  "呼び径":     { sym: "d", def: "ボルトの外側のおおよその直径。「M」のあとの数字がほぼ呼び径(mm)に相当します。M10なら外径10mm前後。", ex: "例: M8 → 外径ほぼ8mm" },
+  "ピッチ":     { sym: "P", def: "となり合うねじ山の間隔(mm)。ピッチが小さいほど細かいねじ。一般的な並目(なみめ)と、より細かい細目(ほそめ)があります。", ex: "M10並目: P=1.5mm / 細目: P=1.25 や 1.0mm" },
+  "並目":       { sym: "coarse", def: "標準のピッチ(ねじ山の間隔)。ふだん使われるねじはほぼ並目。ホームセンターのボルトはすべてこれ。", ex: "M10×1.5(並目)" },
+  "細目":       { sym: "fine", def: "並目より目が細かい(ピッチが小さい)ねじ。緩みにくいので振動部や薄物に使われます。専用工具・専用ナットが必要。", ex: "M10×1.25(細目)" },
+  "有効径":     { sym: "d₂", def: "ねじ山の中ほど(山と谷の中間あたり)の直径。雄ねじと雌ねじが実際にかみ合う位置。外径より少し細い。", ex: "M10並目の d₂ = 9.026mm" },
+  "谷の径":     { sym: "d₁", def: "ねじ山の谷(一番細い部分)の直径。ボルトの最も細い場所なので、引っ張ったときはここから壊れます。", ex: "M10並目の d₁ = 8.376mm" },
+  "応力断面積": { sym: "As", def: "強度計算に使う実効的な断面積(mm²)。谷径より少し大きい値で、ボルトの「引っ張りに耐える太さ」を数値化したもの。引張強さ × As でボルトが切れる荷重がわかります。", ex: "M10並目 As=58 mm²、強度区分8.8なら 800×58=46,400 N(約4.7トン)で切断" },
+  "二面幅":     { sym: "s", def: "六角ボルトの頭部を、平行な2面でスパナで掴む幅(mm)。「M10だから17mmスパナ」のように、サイズと工具を結びつける数値。", ex: "M10 → 17mm / M12 → 19mm / M16 → 24mm" },
+  "頭部高さ":   { sym: "k", def: "ボルトの頭の厚さ(mm)。座面から頭のてっぺんまでの高さ。", ex: "M10六角ボルト k=6.4mm" },
+  "下穴":       { sym: "tap drill", def: "雌ねじ(ナット側)を切るために、あらかじめ開けておく穴の径。目安は「呼び径 − ピッチ」。", ex: "M10並目の下穴 = 10 - 1.5 = 8.5mm" },
+  "通し穴":     { sym: "clearance hole", def: "ボルトを「通すだけ」の穴の径。ボルト外径より少し大きく取る。1級は厳しめ、3級はゆるめ。", ex: "M10 1級=10.3 / 2級=10.5 / 3級=11.0mm" },
+  "強度区分":   { sym: "property class", def: "ボルトの強さを表す国際的な番号。例えば「8.8」は引張強さ800MPa・耐力640MPaを意味します。ボルト頭の刻印で見分けられます。", ex: "頭刻印「8.8」「10.9」「A2-70」など" },
+  "引張強さ":   { sym: "Rm", def: "引っ張ってちぎれる直前の最大強度(MPa = N/mm²)。「ここまで引っ張ったら壊れる」値。", ex: "強度区分8.8 → Rm = 800 MPa" },
+  "耐力":       { sym: "Rp0.2", def: "ボルトが永久に変形しはじめる強さ(MPa)。「ここを超えると伸びたまま戻らなくなる」値。締付トルクの計算はこの値を基準にします。", ex: "強度区分8.8 → Rp = 640 MPa(=800×0.8)" },
+  "降伏比":     { sym: "Rp/Rm", def: "耐力 / 引張強さ。強度区分の数字の後半に対応(8.8 → 0.8)。1に近いほど「ねばり」が少なく硬い。", ex: "8.8=0.8 / 10.9=0.9 / 12.9=0.9" },
+  "伸び":       { sym: "A", def: "切れるまでに何%伸びられるかの指標。値が大きいほど「ねばり」がある(=もろくない)。", ex: "強度区分8.8 → 12%以上" },
+  "硬度HV":     { sym: "HV", def: "ビッカース硬さ。小さな四角錐の圧子を押し付けてできるくぼみの大きさで測定。やわらかい→硬い の順で数値が大きくなる。", ex: "8.8: HV 250〜320" },
+  "硬度HRC":    { sym: "HRC", def: "ロックウェル硬さ Cスケール。硬い金属でよく使われる単位。HV と相互換算できる。", ex: "8.8: HRC 約23〜34" },
+  "締付トルク": { sym: "T", def: "ボルトを回して締めるときに加える回転の力(N·m = ニュートン・メートル)。トルクレンチでこの値に合わせて締めます。", ex: "M10 8.8 → 約50 N·m" },
+  "軸力":       { sym: "F", def: "締めたボルトが、部材を押し付ける力(N または kN)。これが「ボルトが本当に発揮している力」。トルクは軸力を出すための「手段」にすぎません。", ex: "M10 8.8 → 推奨軸力 約26 kN(=約2.6トンを押し付ける)" },
+  "軸力比":     { sym: "ratio", def: "耐力(Rp)に対する軸力の比率。普通は0.70(=耐力の70%まで使う)。重要部や繰返荷重では0.60〜0.65に下げます。", ex: "ratio=0.7 → 耐力の7割の軸力をかける" },
+  "摩擦係数":   { sym: "K", def: "締付トルクのうち、どのくらい摩擦に取られるかを表す経験値。乾燥0.20が標準。グリースを塗ると0.14ほどに下がり、同じトルクでも軸力が増えます。", ex: "K=0.20 乾燥 / 0.16 軽油 / 0.14 グリース" },
+  "UNC":        { sym: "Unified Coarse", def: "アメリカ規格の並目インチねじ。輸入機械やアメリカ製の部品に使われています。", ex: "1/4-20 UNC = 外径1/4インチ、1インチあたり山20個" },
+  "UNF":        { sym: "Unified Fine", def: "アメリカ規格の細目インチねじ。UNCより目が細かい。", ex: "1/4-28 UNF" },
+  "TPI":        { sym: "threads per inch", def: "1インチ(25.4mm)あたりのねじ山の数。値が大きいほど目が細かい。", ex: "1/4-20 → 1インチに20山" },
+  "SAE Grade":  { sym: "SAE J429", def: "アメリカでのボルト強度区分。Grade 2 が低強度、Grade 5 が中強度、Grade 8 が高強度。", ex: "Grade 5 ≒ メートル8.8 / Grade 8 ≒ 10.9" },
+  "オーステナイト系": { sym: "A2/A4", def: "ステンレスの種類のひとつ。磁石につかないタイプ。耐食性に優れる代表格はSUS304(A2)とSUS316(A4)。", ex: "A2=SUS304相当 / A4=SUS316相当(海水OK)" },
+};
+
+// タブごとの「これは何のページ?」紹介文
+const INTRO = {
+  metric: {
+    short: "メートルねじ(<span class=\"term\" data-term=\"呼び径\">M2〜M42</span>)の寸法を調べるページです。",
+    long: "「<b>M10のスパナは何mm?</b>」「<b>下穴(タップ前に開ける穴)は何mm?</b>」「<b>M12並目のピッチは?</b>」といった現場の疑問に答えます。カードをタップすると、そのサイズの全寸法(<span class=\"term\" data-term=\"有効径\">有効径</span>・<span class=\"term\" data-term=\"谷の径\">谷径</span>・<span class=\"term\" data-term=\"応力断面積\">応力断面積</span>・<span class=\"term\" data-term=\"二面幅\">スパナ二面幅</span>など)が見られます。",
+  },
+  strength: {
+    short: "ボルト頭に書かれた数字(<span class=\"term\" data-term=\"強度区分\">8.8・10.9・A2-70</span>など)の意味を調べるページです。",
+    long: "強度区分は「<b>このボルトはどのくらいの力で引っ張ったら壊れるか</b>」を表す番号。例えば「<b>8.8</b>」は、引張強さ800MPa(≒81kgf/mm²)・耐力640MPa を意味します。ステンレスは「A2-70」「A4-80」のように表記され、A2はSUS304系、A4はSUS316系(海水OK)です。",
+  },
+  torque: {
+    short: "ボルトを「どのくらいの力で締めればよいか」を計算するページです。",
+    long: "「<b>M10の8.8ボルト、グリース塗布、トルクレンチで何N·m?</b>」をその場で計算。サイズ・強度区分・摩擦状態を選ぶだけ。出てくるのは推奨<span class=\"term\" data-term=\"締付トルク\">締付トルク</span>(N·m)と、そのとき実際にボルトが部材を押し付ける<span class=\"term\" data-term=\"軸力\">軸力</span>(kN)です。",
+  },
+  inch: {
+    short: "輸入機械や旧式の装置で出てくる<span class=\"term\" data-term=\"UNC\">インチねじ</span>を調べるページです。",
+    long: "「<b>1/4-20 UNC は何mm?</b>」「<b>SAE Grade 5 は日本の8.8と同じくらい?</b>」のような疑問に。外径(mm換算)、ピッチ(mm換算)、応力断面積、そしてSAE Grade別の推奨締付トルクが見られます。",
+  },
+};
+
 // =====================================================
 // STATE
 // =====================================================
@@ -944,20 +1383,75 @@ function getMetricLabel(d, pitch, isFine) {
 // RENDERING
 // =====================================================
 function render() {
-  const filterRow = $("filterRow");
-  const content = $("contentArea");
-  const filterLabel = $("filterLabel");
-  const countNum = $("countNum");
-
   // tabs
   document.querySelectorAll(".tab-btn").forEach(b => {
     b.classList.toggle("active", b.dataset.tab === currentTab);
   });
 
+  // intro banner
+  renderIntroBanner();
+
   if (currentTab === "metric")    renderMetric();
   else if (currentTab === "strength") renderStrength();
   else if (currentTab === "torque")   renderTorque();
   else if (currentTab === "inch")     renderInch();
+
+  // attach term handlers globally after each render
+  attachTermHandlers();
+}
+
+function renderIntroBanner() {
+  const intro = INTRO[currentTab];
+  const banner = $("introBanner");
+  const isOpen = banner.classList.contains("open");
+  banner.innerHTML = `
+    <div class="ib-title">このページは?</div>
+    <div class="ib-text">${intro.short}</div>
+    <button class="ib-toggle" id="introToggle">もう少し詳しく</button>
+    <div class="ib-more">${intro.long}</div>
+  `;
+  if (isOpen) banner.classList.add("open");
+  $("introToggle").onclick = () => banner.classList.toggle("open");
+}
+
+function attachTermHandlers() {
+  document.querySelectorAll(".term").forEach(el => {
+    if (el._termBound) return;
+    el._termBound = true;
+    el.addEventListener("click", (e) => {
+      e.stopPropagation();
+      showTerm(el.dataset.term);
+    });
+  });
+  document.querySelectorAll(".info-btn[data-term]").forEach(el => {
+    if (el._termBound) return;
+    el._termBound = true;
+    el.addEventListener("click", (e) => {
+      e.stopPropagation();
+      showTerm(el.dataset.term);
+    });
+  });
+}
+
+function showTerm(name) {
+  const g = GLOSSARY[name];
+  if (!g) return;
+  $("ipName").textContent = name;
+  $("ipSym").textContent = g.sym || "";
+  $("ipDef").textContent = g.def;
+  const ex = $("ipExample");
+  if (g.ex) { ex.style.display = "block"; ex.textContent = g.ex; }
+  else { ex.style.display = "none"; }
+  $("infoPop").classList.add("visible");
+}
+
+// helper: inline term link in HTML
+function T(name, displayText) {
+  return `<span class="term" data-term="${name}">${displayText || name}</span>`;
+}
+// helper: info button after a label
+function I(name) {
+  return `<button class="info-btn" data-term="${name}" title="この用語を解説">i</button>`;
 }
 
 // ---------- Metric tab ----------
@@ -1050,45 +1544,53 @@ function showMetricDetail(d) {
   $("modalBody").innerHTML = `
     <div class="modal-name">メートルねじ M${m.d}(JIS B 0205-4 / ISO 724)</div>
 
+    <div class="plain-summary">
+      <span class="ps-lbl">ひとことで言うと</span>
+      <b>外径が約${m.d}mm のボルト</b>です。
+      ふつうに使うときのスパナは <b>${m.hex.s}mm</b>、六角レンチは <b>${m.cap.s}mm</b>。
+      タップ(雌ねじ)を切るための下穴は <b>${(m.d - c.P).toFixed(1)}mm</b> を開けます。
+      ${m.fine && m.fine.length ? `振動部や緩み防止が必要な場所では細目(P=${m.fine.map(f=>f.P).join("/")})も選べます。` : ""}
+    </div>
+
     <div class="spec-section">
       <div class="spec-section-title">ねじ寸法 (並目)</div>
       <table class="spec-table">
-        <tr><td>呼び径 d</td><td>${m.d} mm</td></tr>
-        <tr><td>ピッチ P</td><td>${c.P} mm</td></tr>
-        <tr><td>有効径 d₂</td><td>${c.d2} mm</td></tr>
-        <tr><td>谷の径 d₁</td><td>${c.d1} mm</td></tr>
-        <tr><td>応力断面積 As</td><td>${c.As} mm²</td></tr>
+        <tr><td>${T("呼び径", "呼び径 d")}${I("呼び径")}</td><td>${m.d} mm</td></tr>
+        <tr><td>${T("ピッチ", "ピッチ P")}${I("ピッチ")}</td><td>${c.P} mm</td></tr>
+        <tr><td>${T("有効径", "有効径 d₂")}${I("有効径")}</td><td>${c.d2} mm</td></tr>
+        <tr><td>${T("谷の径", "谷の径 d₁")}${I("谷の径")}</td><td>${c.d1} mm</td></tr>
+        <tr><td>${T("応力断面積", "応力断面積 As")}${I("応力断面積")}</td><td>${c.As} mm²</td></tr>
       </table>
     </div>
 
     ${(m.fine && m.fine.length) ? `
     <div class="spec-section">
-      <div class="spec-section-title">細目</div>
+      <div class="spec-section-title">${T("細目","細目")}${I("細目")}</div>
       <table class="spec-table">${fineRows}</table>
     </div>` : ""}
 
     <div class="spec-section">
-      <div class="spec-section-title">六角ボルト (JIS B 1180 first choice)</div>
+      <div class="spec-section-title">六角ボルト (JIS B 1180)</div>
       <table class="spec-table">
-        <tr><td>二面幅 s</td><td>${m.hex.s} mm</td></tr>
-        <tr><td>頭部高さ k</td><td>${m.hex.k} mm</td></tr>
+        <tr><td>${T("二面幅","二面幅 s")}${I("二面幅")}<div style="font-size:11px;color:var(--ink-faint);">スパナのサイズ</div></td><td>${m.hex.s} mm</td></tr>
+        <tr><td>${T("頭部高さ","頭部高さ k")}${I("頭部高さ")}</td><td>${m.hex.k} mm</td></tr>
       </table>
     </div>
 
     <div class="spec-section">
       <div class="spec-section-title">六角穴付きボルト / キャップボルト (JIS B 1176)</div>
       <table class="spec-table">
-        <tr><td>六角穴二面幅 s</td><td>${m.cap.s} mm</td></tr>
+        <tr><td>六角穴二面幅 s<div style="font-size:11px;color:var(--ink-faint);">六角レンチのサイズ</div></td><td>${m.cap.s} mm</td></tr>
         <tr><td>頭部径 dk</td><td>${m.cap.dk} mm</td></tr>
         <tr><td>頭部高さ k</td><td>${m.cap.k} mm</td></tr>
       </table>
     </div>
 
     <div class="spec-section">
-      <div class="spec-section-title">強度区分別 推奨締付トルク (K=0.20, F=0.7Rp×As)</div>
+      <div class="spec-section-title">強度区分別 推奨${T("締付トルク","締付トルク")}${I("締付トルク")} (K=0.20, F=0.7Rp×As)</div>
       <div class="torque-grid">
-        <div class="th">区分</div>
-        <div class="th">軸力 [kN]</div>
+        <div class="th">${T("強度区分","区分")}${I("強度区分")}</div>
+        <div class="th">${T("軸力","軸力")} [kN]</div>
         <div class="th">トルク [N·m]</div>
         ${["4.8","8.8","10.9","12.9","A2-70"].map(g => {
           const s = STRENGTH.find(x => x.grade === g);
@@ -1099,8 +1601,10 @@ function showMetricDetail(d) {
       </div>
     </div>
 
-    <div class="spec-note">タップ下穴径(目安): 並目 ${(m.d - c.P).toFixed(2)} mm(d − P)。<br>
-    通し穴径: 並目 1級 ${(m.d + 0.3).toFixed(1)} / 2級 ${(m.d + 0.5).toFixed(1)} / 3級 ${(m.d + 1.0).toFixed(1)} mm(JIS B 1001)。</div>
+    <div class="spec-note">
+      <b>${T("下穴","下穴")} ${I("下穴")} (タップ前に開ける穴):</b> 並目 ${(m.d - c.P).toFixed(2)} mm(d − P)<br>
+      <b>${T("通し穴","通し穴")} ${I("通し穴")} (ボルトを通すだけの穴):</b> 1級 ${(m.d + 0.3).toFixed(1)} / 2級 ${(m.d + 0.5).toFixed(1)} / 3級 ${(m.d + 1.0).toFixed(1)} mm(JIS B 1001)
+    </div>
   `;
   $("detailModal").classList.add("visible");
 }
@@ -1178,19 +1682,39 @@ function showStrengthDetail(grade) {
   const hrcMin = hvToHrc(s.hvMin);
   const hrcMax = hvToHrc(s.hvMax);
 
+  // plain-language summary
+  let plain;
+  if (s.type === "stainless") {
+    const baseAlloy = s.grade.startsWith("A4") ? "SUS316相当(モリブデン入り、海水・塩害OK)" : "SUS304相当(汎用ステンレス)";
+    plain = `<b>${baseAlloy}</b>のステンレス製ボルト。引張強さは ${s.Rm} MPa(=断面1mm²あたり約${Math.round(s.Rm/9.8)} kgf に耐える)。
+    A2/A4の後ろの数字「${s.grade.split("-")[1]}」は引張強さの 1/10(MPa)を表しています。`;
+  } else {
+    const tensilePart = s.grade.split(".")[0];
+    const ratioPart = s.grade.split(".")[1];
+    plain = `頭の刻印「<b>${s.grade}</b>」は、<b>引張強さ ${s.Rm} MPa</b>(=最大${Math.round(s.Rm/9.8)} kgf/mm² まで耐える)、
+    <b>耐力 ${s.Rp} MPa</b>(=ここを超えると永久に伸びる)を意味します。
+    左の数字「${tensilePart}」が引張強さの1/100、右の「${ratioPart}」×10 が耐力/引張強さの%。
+    ${parseFloat(s.grade) >= 10 ? "重要保安部品クラスの高強度ボルトです。" : parseFloat(s.grade) >= 8 ? "もっとも普及している高張力ボルトです。" : "一般用途の標準ボルトです。"}`;
+  }
+
   $("modalBody").innerHTML = `
     <div class="modal-name">${s.material} ${s.type === "stainless" ? "/ ISO 3506-1" : "/ ISO 898-1 · JIS B 1051"}</div>
+
+    <div class="plain-summary">
+      <span class="ps-lbl">ひとことで言うと</span>
+      ${plain}
+    </div>
 
     <div class="spec-section">
       <div class="spec-section-title">機械的性質</div>
       <table class="spec-table">
         <tr><td>呼び 区分</td><td>${s.grade}</td></tr>
-        <tr><td>引張強さ Rm (最小)</td><td>${s.Rm} MPa</td></tr>
-        <tr><td>耐力 Rp0.2 (最小)</td><td>${s.Rp} MPa</td></tr>
-        <tr><td>降伏比 (Rp/Rm)</td><td>${(s.Rp / s.Rm).toFixed(2)}</td></tr>
-        <tr><td>伸び A (最小)</td><td>${s.A}%</td></tr>
-        <tr><td>硬度 HV</td><td>${s.hvMin}–${s.hvMax}</td></tr>
-        <tr><td>硬度 HRC (概算)</td><td>${hrcMin}–${hrcMax}</td></tr>
+        <tr><td>${T("引張強さ", "引張強さ Rm")} ${I("引張強さ")} (最小)</td><td>${s.Rm} MPa</td></tr>
+        <tr><td>${T("耐力", "耐力 Rp0.2")} ${I("耐力")} (最小)</td><td>${s.Rp} MPa</td></tr>
+        <tr><td>${T("降伏比", "降伏比 (Rp/Rm)")} ${I("降伏比")}</td><td>${(s.Rp / s.Rm).toFixed(2)}</td></tr>
+        <tr><td>${T("伸び", "伸び A")} ${I("伸び")} (最小)</td><td>${s.A}%</td></tr>
+        <tr><td>${T("硬度HV", "硬度 HV")} ${I("硬度HV")}</td><td>${s.hvMin}–${s.hvMax}</td></tr>
+        <tr><td>${T("硬度HRC", "硬度 HRC")} ${I("硬度HRC")} (概算)</td><td>${hrcMin}–${hrcMax}</td></tr>
         <tr><td>代表材質</td><td>${s.material}</td></tr>
       </table>
     </div>
@@ -1260,18 +1784,24 @@ function renderTorque() {
     <div class="calc-section">
       <div class="calc-title">入力パラメータ</div>
 
+      <div class="plain-summary" style="margin:0 0 14px;">
+        <span class="ps-lbl">使い方</span>
+        ①ねじサイズ ②強度区分(ボルト頭の刻印) ③摩擦状態(乾燥/グリース等) を選ぶと、
+        トルクレンチで合わせるべき<b>締付トルク(N·m)</b>と、そのとき実際に部材を押し付ける力=<b>軸力(kN)</b>が下に出ます。
+      </div>
+
       <div class="calc-row">
-        <label>ねじ呼び</label>
+        <label>ねじ呼び${I("呼び径")}</label>
         <select id="sizeSel">${sizeOptions}</select>
       </div>
 
       <div class="calc-row">
-        <label>強度区分</label>
+        <label>強度区分${I("強度区分")}</label>
         <select id="gradeSel">${gradeOptions}</select>
       </div>
 
       <div class="calc-row">
-        <label>摩擦状態</label>
+        <label>摩擦状態${I("摩擦係数")}</label>
         <div class="friction-chips" id="frictionChips">
           ${FRICTION.map(f =>
             `<button class="friction-chip ${Math.abs(torqueState.K - f.K) < 0.001 ? "active" : ""}" data-k="${f.K}">${f.label} K=${f.K}</button>`
@@ -1280,12 +1810,12 @@ function renderTorque() {
       </div>
 
       <div class="calc-row">
-        <label>K (任意)</label>
+        <label>K (任意)${I("摩擦係数")}</label>
         <input type="number" id="kInput" value="${torqueState.K}" step="0.01" min="0.05" max="0.50">
       </div>
 
       <div class="calc-row">
-        <label>軸力比 (×Rp)</label>
+        <label>軸力比 (×Rp)${I("軸力比")}</label>
         <input type="number" id="ratioInput" value="${torqueState.ratio}" step="0.05" min="0.30" max="0.90">
       </div>
 
@@ -1293,7 +1823,7 @@ function renderTorque() {
 
       <div class="calc-note">
         <b>計算式:</b> 推奨軸力 F = 軸力比 × Rp0.2 × As / 締付トルク T = K × F × d<br>
-        標準は軸力比 0.70(耐力の70%)。重要部は0.60〜0.65に下げる、繰返荷重・振動環境では更に低下を考慮。<br>
+        標準は軸力比 0.70(=${T("耐力","耐力")}の70%)。重要部は0.60〜0.65に下げる、繰返荷重・振動環境では更に低下を考慮。<br>
         K は座面・ねじ部の合計摩擦を表す経験値。実機は試験測定が望ましい。
       </div>
     </div>
@@ -1472,23 +2002,35 @@ function showInchDetail(sizeKey) {
   const dInch = (i.d / 25.4).toFixed(4);
   const pInch = (1 / i.tpi).toFixed(4);
 
+  // closest metric equivalent
+  const closest = METRIC.reduce((best, m) =>
+    Math.abs(m.d - i.d) < Math.abs(best.d - i.d) ? m : best, METRIC[0]);
+
   $("modalBody").innerHTML = `
     <div class="modal-name">${i.group} ねじ — ASME B1.1 / ANSI</div>
+
+    <div class="plain-summary">
+      <span class="ps-lbl">ひとことで言うと</span>
+      アメリカ規格の<b>${i.group === "UNC" ? "並目" : i.group === "UNF" ? "細目" : "特殊"}インチねじ</b>。
+      外径は <b>${i.d} mm</b>(${dInch}インチ)、1インチに ${i.tpi} 山(ピッチ ${i.P}mm)。
+      もっとも近いメートル系は <b>M${closest.d}×${closest.coarse.P}</b>(外径${closest.d}mm)。
+      ${i.group === "UNC" ? "アメリカ製の機械や輸入品でよく見かけます。" : i.group === "UNF" ? "細目なので緩みにくい用途に。" : ""}
+    </div>
 
     <div class="spec-section">
       <div class="spec-section-title">寸法</div>
       <table class="spec-table">
         <tr><td>呼び</td><td>${i.size}</td></tr>
-        <tr><td>区分</td><td>${i.group}</td></tr>
-        <tr><td>ねじ山数 (TPI)</td><td>${i.tpi}</td></tr>
-        <tr><td>外径 d</td><td>${i.d} mm (${dInch}")</td></tr>
-        <tr><td>ピッチ P</td><td>${i.P} mm (${pInch}")</td></tr>
-        <tr><td>応力断面積 As</td><td>${i.As} mm²</td></tr>
+        <tr><td>${T("UNC","区分")} ${i.group === "UNC" ? I("UNC") : i.group === "UNF" ? I("UNF") : ""}</td><td>${i.group}</td></tr>
+        <tr><td>${T("TPI","ねじ山数 (TPI)")} ${I("TPI")}</td><td>${i.tpi}</td></tr>
+        <tr><td>${T("呼び径", "外径 d")} ${I("呼び径")}</td><td>${i.d} mm (${dInch}")</td></tr>
+        <tr><td>${T("ピッチ", "ピッチ P")} ${I("ピッチ")}</td><td>${i.P} mm (${pInch}")</td></tr>
+        <tr><td>${T("応力断面積", "応力断面積 As")} ${I("応力断面積")}</td><td>${i.As} mm²</td></tr>
       </table>
     </div>
 
     <div class="spec-section">
-      <div class="spec-section-title">SAE強度区分別 推奨締付トルク (K=0.20, F=0.7Rp×As)</div>
+      <div class="spec-section-title">${T("SAE Grade","SAE強度区分")} ${I("SAE Grade")} 別 推奨${T("締付トルク","締付トルク")} (K=0.20)</div>
       <div class="torque-grid">
         <div class="th">SAE Grade</div>
         <div class="th">Rp [MPa]</div>
@@ -1506,8 +2048,10 @@ function showInchDetail(sizeKey) {
     </div>
 
     <div class="spec-note">
-      <b>SAE Grade対応(概算):</b><br>
-      Grade 2 ≒ メートル4.8 / Grade 5 ≒ メートル8.8 / Grade 8 ≒ メートル10.9。<br>
+      <b>SAE Gradeとメートル強度区分の対応(概算):</b><br>
+      Grade 2 ≒ メートル4.8(低強度・汎用)<br>
+      Grade 5 ≒ メートル8.8(中強度・一般構造の最普及)<br>
+      Grade 8 ≒ メートル10.9(高強度・重要部品)<br>
       Rp 値は1/4〜3/4インチ範囲の代表値。詳細はSAE J429参照。
     </div>
   `;
@@ -1555,6 +2099,10 @@ document.querySelectorAll("[data-action]").forEach(item => {
     $("menuModal").classList.remove("visible");
     if (action === "about") {
       $("aboutModal").classList.add("visible");
+    } else if (action === "welcome") {
+      showWelcome();
+    } else if (action === "glossary") {
+      showGlossary();
     } else if (action === "steel-app") {
       window.location.href = "../";
     }
@@ -1566,6 +2114,66 @@ $("aboutModal").onclick = (e) => {
   if (e.target.id === "aboutModal") $("aboutModal").classList.remove("visible");
 };
 
+// ----- Welcome / Glossary / Info popover -----
+function showWelcome() {
+  $("welcomeModal").classList.add("visible");
+}
+function hideWelcome() {
+  $("welcomeModal").classList.remove("visible");
+}
+$("welcomeCloseBtn").onclick = hideWelcome;
+$("welcomeStartBtn").onclick = hideWelcome;
+$("welcomeSkipBtn").onclick = () => {
+  try { localStorage.setItem("bolt_welcome_skip", "1"); } catch (e) {}
+  hideWelcome();
+  showToast("次回から自動表示しません(メニューからいつでも開けます)");
+};
+$("welcomeModal").onclick = (e) => {
+  if (e.target.id === "welcomeModal") hideWelcome();
+};
+
+function showGlossary() {
+  const groups = [
+    { title: "ねじ寸法のことば", terms: ["呼び径","ピッチ","並目","細目","有効径","谷の径","応力断面積","二面幅","頭部高さ","下穴","通し穴"] },
+    { title: "強度のことば",     terms: ["強度区分","引張強さ","耐力","降伏比","伸び","硬度HV","硬度HRC","オーステナイト系"] },
+    { title: "締付のことば",     terms: ["締付トルク","軸力","軸力比","摩擦係数"] },
+    { title: "インチねじのことば", terms: ["UNC","UNF","TPI","SAE Grade"] },
+  ];
+  $("glossaryBody").innerHTML = groups.map(g => `
+    <div class="spec-section">
+      <div class="spec-section-title">${g.title}</div>
+      ${g.terms.map(name => {
+        const t = GLOSSARY[name];
+        if (!t) return "";
+        return `<div class="term-card">
+          <div class="tc-row">
+            <span class="tc-name">${name}</span>
+            <span class="tc-sym">${t.sym || ""}</span>
+          </div>
+          <div class="tc-def">${t.def}</div>
+          ${t.ex ? `<div class="tc-example">${t.ex}</div>` : ""}
+        </div>`;
+      }).join("")}
+    </div>
+  `).join("");
+  $("glossaryModal").classList.add("visible");
+}
+$("glossaryCloseBtn").onclick = () => $("glossaryModal").classList.remove("visible");
+$("glossaryModal").onclick = (e) => {
+  if (e.target.id === "glossaryModal") $("glossaryModal").classList.remove("visible");
+};
+
+$("infoPop").onclick = (e) => {
+  if (e.target.id === "infoPop") $("infoPop").classList.remove("visible");
+};
+
+// Close info popover on Escape
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    $("infoPop").classList.remove("visible");
+  }
+});
+
 // service worker
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -1575,6 +2183,14 @@ if ("serviceWorker" in navigator) {
 
 // init
 render();
+
+// First-visit welcome
+try {
+  if (!localStorage.getItem("bolt_welcome_skip") && !localStorage.getItem("bolt_welcome_shown")) {
+    localStorage.setItem("bolt_welcome_shown", "1");
+    setTimeout(showWelcome, 250);
+  }
+} catch (e) { /* private mode etc. */ }
 </script>
 </body>
 </html>
