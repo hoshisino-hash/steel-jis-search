@@ -1702,23 +1702,18 @@ function renderIntroBanner() {
 }
 
 function attachTermHandlers() {
-  document.querySelectorAll(".term").forEach(el => {
-    if (el._termBound) return;
-    el._termBound = true;
-    el.addEventListener("click", (e) => {
-      e.stopPropagation();
-      showTerm(el.dataset.term);
-    });
-  });
-  document.querySelectorAll(".info-btn[data-term]").forEach(el => {
-    if (el._termBound) return;
-    el._termBound = true;
-    el.addEventListener("click", (e) => {
-      e.stopPropagation();
-      showTerm(el.dataset.term);
-    });
-  });
+  // No-op: 互換のため残置。実際の処理は document-level の delegation 1か所で行う。
 }
+
+// 用語リンク(.term) と ⓘボタン(.info-btn) のクリックを、DOM全体で1つの
+// handler が補足する。innerHTML で後から生成された要素にも自動で効く。
+document.addEventListener("click", (e) => {
+  const t = e.target.closest(".term[data-term], .info-btn[data-term]");
+  if (!t) return;
+  e.stopPropagation();
+  e.preventDefault();
+  showTerm(t.dataset.term);
+});
 
 function showTerm(name) {
   const g = GLOSSARY[name];
