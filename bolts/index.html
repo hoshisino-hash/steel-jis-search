@@ -1416,6 +1416,14 @@
           <input type="url" id="destFormInput" placeholder="https://docs.google.com/forms/d/e/.../viewform">
           <div class="hint">「Googleフォームで送信」で開くURL。内容はクリップボードに自動コピーされ、フォームに貼り付けるだけで送信できます。</div>
         </div>
+
+        <div class="form-row">
+          <label>鋼材JISアプリ(姉妹アプリ)のURL</label>
+          <input type="url" id="parentUrlInput" placeholder="https://steel-jis-search.pages.dev/">
+          <div class="hint">メニューの「鋼材JIS規格 早見表へ」から飛ぶ先。<br>
+          ・空欄のままなら相対パス「<code>../</code>」を使用(同じプロジェクト配下にデプロイした場合に動作)<br>
+          ・独立デプロイ・プレビュー閲覧の場合は親アプリのURLを明示的に登録してください</div>
+        </div>
       </div>
 
       <div class="form-actions">
@@ -2477,7 +2485,17 @@ document.querySelectorAll("[data-action]").forEach(item => {
     } else if (action === "settings") {
       openSettings();
     } else if (action === "steel-app") {
-      window.location.href = "../";
+      const url = parentUrl || "../";
+      try {
+        // 同一オリジン or 設定済みなら直接遷移、それ以外は新タブで開く(誤動作防止)
+        if (parentUrl && !parentUrl.startsWith(location.origin)) {
+          window.open(url, "_blank");
+        } else {
+          window.location.href = url;
+        }
+      } catch (e) {
+        window.location.href = url;
+      }
     }
   };
 });
@@ -2486,16 +2504,19 @@ document.querySelectorAll("[data-action]").forEach(item => {
 const LS_REQUESTS = "bolt_requests";
 const LS_DEST_EMAIL = "bolt_dest_email";
 const LS_DEST_FORM = "bolt_dest_form";
+const LS_PARENT_URL = "bolt_parent_url";
 
 let pendingRequests = [];
 let destEmail = "";
 let destForm = "";
+let parentUrl = "";
 
 function loadRequestSettings() {
   try {
     pendingRequests = JSON.parse(localStorage.getItem(LS_REQUESTS) || "[]");
     destEmail = localStorage.getItem(LS_DEST_EMAIL) || "";
     destForm = localStorage.getItem(LS_DEST_FORM) || "";
+    parentUrl = localStorage.getItem(LS_PARENT_URL) || "";
   } catch (e) {
     pendingRequests = [];
   }
@@ -2643,6 +2664,7 @@ $("reqSubmitLocal").onclick = () => {
 function openSettings() {
   $("destEmailInput").value = destEmail;
   $("destFormInput").value = destForm;
+  $("parentUrlInput").value = parentUrl;
   $("settingsModal").classList.add("visible");
 }
 $("settingsCloseBtn").onclick = () => $("settingsModal").classList.remove("visible");
@@ -2652,12 +2674,14 @@ $("settingsModal").onclick = (e) => {
 $("settingsSaveBtn").onclick = () => {
   destEmail = $("destEmailInput").value.trim();
   destForm = $("destFormInput").value.trim();
+  parentUrl = $("parentUrlInput").value.trim();
   try {
     localStorage.setItem(LS_DEST_EMAIL, destEmail);
     localStorage.setItem(LS_DEST_FORM, destForm);
+    localStorage.setItem(LS_PARENT_URL, parentUrl);
   } catch (e) {}
   $("settingsModal").classList.remove("visible");
-  showToast("送信先を保存しました");
+  showToast("設定を保存しました");
 };
 
 // ----- Request List -----
