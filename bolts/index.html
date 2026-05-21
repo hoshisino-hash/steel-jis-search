@@ -950,6 +950,142 @@
     cursor: pointer;
     text-decoration: underline;
   }
+
+  /* ===== Material request form ===== */
+  .form-section {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .form-row {
+    margin-bottom: 12px;
+  }
+  .form-row label {
+    display: block;
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .form-row .req {
+    color: var(--accent);
+    font-size: 10px;
+    margin-left: 4px;
+  }
+  .form-row .hint {
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-top: 3px;
+    line-height: 1.5;
+  }
+  .form-row input[type="text"],
+  .form-row input[type="email"],
+  .form-row input[type="url"],
+  .form-row textarea,
+  .form-row select {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 14px;
+    border-radius: 2px;
+    outline: none;
+  }
+  .form-row input:focus, .form-row textarea:focus, .form-row select:focus {
+    border-color: var(--ink);
+  }
+  .form-row textarea {
+    resize: vertical;
+    min-height: 60px;
+    font-family: inherit;
+    line-height: 1.5;
+  }
+
+  .form-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .form-actions button {
+    width: 100%;
+    padding: 11px;
+    font-family: inherit;
+    font-size: 14px;
+    border-radius: 2px;
+    cursor: pointer;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  .form-actions button:active { background: #000; }
+  .form-actions button.secondary {
+    background: var(--bg-card);
+    color: var(--ink);
+  }
+  .form-actions button.secondary:active { background: var(--line-soft); }
+  .form-actions button.warn {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .form-actions button:disabled {
+    background: var(--line-soft);
+    color: var(--ink-faint);
+    border-color: var(--line);
+    cursor: not-allowed;
+  }
+
+  .req-item {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .req-item .ri-name {
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 3px;
+  }
+  .req-item .ri-meta {
+    font-size: 10px;
+    color: var(--ink-faint);
+    font-family: Georgia, serif;
+    font-style: italic;
+    letter-spacing: 0.05em;
+  }
+  .req-item .ri-body {
+    font-size: 12px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+    margin-top: 4px;
+  }
+  .req-item .ri-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .req-item .ri-actions button {
+    flex: 1;
+    padding: 5px 8px;
+    font-size: 11px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    cursor: pointer;
+    font-family: inherit;
+    border-radius: 2px;
+  }
+  .req-item .ri-actions button.del {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
 </style>
 </head>
 <body>
@@ -1014,6 +1150,18 @@
     <button class="menu-item" data-action="glossary">
       <span class="icon">⌥</span>
       <div class="label-wrap">用語集<span class="sub">専門用語をやさしく解説</span></div>
+    </button>
+    <button class="menu-item" data-action="request">
+      <span class="icon">＋</span>
+      <div class="label-wrap">材質を追加リクエスト<span class="sub">黄銅・アルミ等、無い材質の追加を依頼</span></div>
+    </button>
+    <button class="menu-item" data-action="requestList">
+      <span class="icon">≡</span>
+      <div class="label-wrap">送信したリクエスト<span class="sub" id="reqCountSub">(0件)</span></div>
+    </button>
+    <button class="menu-item" data-action="settings">
+      <span class="icon">⚙</span>
+      <div class="label-wrap">送信先の設定<span class="sub">メール宛先・Googleフォーム</span></div>
     </button>
     <button class="menu-item" data-action="about">
       <span class="icon">⚐</span>
@@ -1146,6 +1294,13 @@
         メニュー(右上 ≡)から<b>「用語集」</b>を開けば、専門用語の一覧解説も読めます。</p>
       </div>
 
+      <div class="welcome-section">
+        <h4>欲しい材質が無いときは</h4>
+        <p>このアプリには現在、鉄系・ステンレス系のボルトのみ登録されています。
+        <b>黄銅・アルミ・チタン・樹脂</b>などの材質が必要な場合は、メニューの<b>「材質を追加リクエスト」</b>から要望を登録できます。
+        メール / Googleフォーム / クリップボードコピーから送信方法を選べます。</p>
+      </div>
+
       <button class="start-btn" id="welcomeStartBtn">アプリを使ってみる</button>
       <button class="skip-link" id="welcomeSkipBtn">次回から表示しない</button>
     </div>
@@ -1160,6 +1315,130 @@
       <button class="modal-close" id="glossaryCloseBtn">×</button>
     </div>
     <div class="modal-body" id="glossaryBody"></div>
+  </div>
+</div>
+
+<!-- Material Request modal -->
+<div class="modal-bg" id="requestModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-code" style="font-size:17px;">材質の追加リクエスト</div>
+      <button class="modal-close" id="requestCloseBtn">×</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="plain-summary">
+        <span class="ps-lbl">このフォームの目的</span>
+        このアプリの強度区分一覧に<b>載っていない材質</b>(黄銅・アルミ・チタン・樹脂 等)を追加してほしい場合に、要望を登録します。
+        記入内容はスマホ内に保存され、メールやGoogleフォーム経由で開発者に送信できます。
+      </div>
+
+      <div class="form-section">
+        <div class="form-row">
+          <label>材質名<span class="req">必須</span></label>
+          <input type="text" id="reqName" placeholder="例: 黄銅 (C3604) / アルミ A2017 / SUS630">
+          <div class="hint">なるべく具体的な記号(JIS記号や規格名)があると正確です。</div>
+        </div>
+
+        <div class="form-row">
+          <label>材質の種類</label>
+          <select id="reqCategory">
+            <option value="">— 選択してください —</option>
+            <option value="銅合金 (黄銅・青銅・りん青銅)">銅合金 (黄銅・青銅・りん青銅)</option>
+            <option value="軽合金 (アルミ・マグネシウム)">軽合金 (アルミ・マグネシウム)</option>
+            <option value="チタン・特殊金属">チタン・特殊金属</option>
+            <option value="特殊ステンレス (析出硬化系等)">特殊ステンレス (析出硬化系等)</option>
+            <option value="プラスチック・樹脂">プラスチック・樹脂</option>
+            <option value="セラミック・複合材">セラミック・複合材</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label>用途・使う場面</label>
+          <textarea id="reqPurpose" placeholder="例: 電気部品のリードビス(導電性が必要)、軽量化のためアルミビスを使用、海水暴露でSUS316でも腐食、絶縁が必要 等"></textarea>
+        </div>
+
+        <div class="form-row">
+          <label>わかる範囲で参考値 (任意)</label>
+          <textarea id="reqSpec" placeholder="例: Rp ≈ 200 MPa、Rm ≈ 400 MPa、JISなし、メーカーカタログのみ、密度8.5"></textarea>
+        </div>
+
+        <div class="form-row">
+          <label>備考</label>
+          <textarea id="reqNote" placeholder="その他、優先度・使用頻度など"></textarea>
+        </div>
+
+        <div class="form-row">
+          <label>依頼者(任意)</label>
+          <input type="text" id="reqAuthor" placeholder="お名前または部署名">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button id="reqSubmitMail">メールで送信</button>
+        <button id="reqSubmitForm" class="secondary">Googleフォームで送信</button>
+        <button id="reqSubmitClip" class="secondary">クリップボードにコピー</button>
+        <button id="reqSubmitLocal" class="secondary">ローカルに保存だけする</button>
+      </div>
+      <div class="calc-note" style="margin-top:12px;">
+        送信先(メール・フォーム)はメニュー →「送信先の設定」で登録できます。
+        どの方法でも、内容はスマホ内に保存されます(あとでメニュー「送信したリクエスト」から確認可能)。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="modal-bg" id="settingsModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-code" style="font-size:17px;">送信先の設定</div>
+      <button class="modal-close" id="settingsCloseBtn">×</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="plain-summary">
+        <span class="ps-lbl">設定について</span>
+        材質追加リクエストの<b>送信先</b>を一度だけ設定しておくと、毎回の入力が不要になります。
+        設定はこのスマホ内にのみ保存されます。
+      </div>
+
+      <div class="form-section">
+        <div class="form-row">
+          <label>メール宛先</label>
+          <input type="email" id="destEmailInput" placeholder="hoshino@example.com">
+          <div class="hint">「メールで送信」で使われる宛先。複数指定する場合はカンマ区切り。</div>
+        </div>
+
+        <div class="form-row">
+          <label>Googleフォーム URL</label>
+          <input type="url" id="destFormInput" placeholder="https://docs.google.com/forms/d/e/.../viewform">
+          <div class="hint">「Googleフォームで送信」で開くURL。内容はクリップボードに自動コピーされ、フォームに貼り付けるだけで送信できます。</div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button id="settingsSaveBtn">設定を保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Request List modal -->
+<div class="modal-bg" id="reqListModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-code" style="font-size:17px;">送信したリクエスト</div>
+      <button class="modal-close" id="reqListCloseBtn">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="reqListBody"></div>
+      <div class="form-actions" id="reqListActions" style="display:none;">
+        <button id="reqListExport" class="secondary">全件をJSONエクスポート</button>
+        <button id="reqListClear" class="warn">全件をクリア</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2191,11 +2470,294 @@ document.querySelectorAll("[data-action]").forEach(item => {
       showWelcome();
     } else if (action === "glossary") {
       showGlossary();
+    } else if (action === "request") {
+      openRequestForm();
+    } else if (action === "requestList") {
+      openRequestList();
+    } else if (action === "settings") {
+      openSettings();
     } else if (action === "steel-app") {
       window.location.href = "../";
     }
   };
 });
+
+// ===== Material request system =====
+const LS_REQUESTS = "bolt_requests";
+const LS_DEST_EMAIL = "bolt_dest_email";
+const LS_DEST_FORM = "bolt_dest_form";
+
+let pendingRequests = [];
+let destEmail = "";
+let destForm = "";
+
+function loadRequestSettings() {
+  try {
+    pendingRequests = JSON.parse(localStorage.getItem(LS_REQUESTS) || "[]");
+    destEmail = localStorage.getItem(LS_DEST_EMAIL) || "";
+    destForm = localStorage.getItem(LS_DEST_FORM) || "";
+  } catch (e) {
+    pendingRequests = [];
+  }
+  updateRequestCount();
+}
+
+function updateRequestCount() {
+  const el = $("reqCountSub");
+  if (el) el.textContent = `(${pendingRequests.length}件)`;
+}
+
+function openRequestForm() {
+  // clear fields
+  ["reqName","reqPurpose","reqSpec","reqNote","reqAuthor"].forEach(id => { $(id).value = ""; });
+  $("reqCategory").value = "";
+  // disable buttons that have no destination configured
+  $("reqSubmitMail").disabled = !destEmail;
+  $("reqSubmitMail").textContent = destEmail ? `メールで送信 (${destEmail.split(",")[0]})` : "メールで送信 (宛先未設定)";
+  $("reqSubmitForm").disabled = !destForm;
+  $("reqSubmitForm").textContent = destForm ? "Googleフォームで送信" : "Googleフォームで送信 (URL未設定)";
+  $("requestModal").classList.add("visible");
+}
+
+function collectRequest() {
+  const name = $("reqName").value.trim();
+  if (!name) {
+    showToast("材質名を入力してください");
+    $("reqName").focus();
+    return null;
+  }
+  return {
+    id: Date.now(),
+    createdAt: new Date().toISOString(),
+    name,
+    category: $("reqCategory").value,
+    purpose: $("reqPurpose").value.trim(),
+    spec: $("reqSpec").value.trim(),
+    note: $("reqNote").value.trim(),
+    author: $("reqAuthor").value.trim(),
+    app: "ボルト・ねじ規格 早見表",
+    appVersion: "v1.1",
+  };
+}
+
+function formatRequestText(r) {
+  const d = new Date(r.createdAt);
+  const ds = d.toLocaleString("ja-JP");
+  return [
+    `=== 材質追加リクエスト ===`,
+    `アプリ: ${r.app}`,
+    `日時: ${ds}`,
+    ``,
+    `■ 材質名: ${r.name}`,
+    `■ 種類: ${r.category || "(未指定)"}`,
+    `■ 用途・使う場面:`,
+    r.purpose || "(なし)",
+    ``,
+    `■ 参考値:`,
+    r.spec || "(なし)",
+    ``,
+    `■ 備考:`,
+    r.note || "(なし)",
+    ``,
+    `■ 依頼者: ${r.author || "(匿名)"}`,
+  ].join("\n");
+}
+
+function persistRequest(r) {
+  pendingRequests.push(r);
+  try { localStorage.setItem(LS_REQUESTS, JSON.stringify(pendingRequests)); } catch (e) {}
+  updateRequestCount();
+}
+
+function closeRequestForm() {
+  $("requestModal").classList.remove("visible");
+}
+
+$("requestCloseBtn").onclick = closeRequestForm;
+$("requestModal").onclick = (e) => {
+  if (e.target.id === "requestModal") closeRequestForm();
+};
+
+$("reqSubmitMail").onclick = () => {
+  const r = collectRequest();
+  if (!r) return;
+  persistRequest(r);
+  const subject = `[ボルトアプリ] 材質追加リクエスト: ${r.name}`;
+  const body = formatRequestText(r);
+  const url = `mailto:${destEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  try { window.location.href = url; } catch (e) {}
+  closeRequestForm();
+  showToast("メールアプリを開きました。ローカルにも保存しました。");
+};
+
+$("reqSubmitForm").onclick = () => {
+  const r = collectRequest();
+  if (!r) return;
+  persistRequest(r);
+  const text = formatRequestText(r);
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+    }
+  } catch (e) {}
+  window.open(destForm, "_blank");
+  closeRequestForm();
+  showToast("内容をクリップボードにコピーしました。フォームに貼り付けてください。");
+};
+
+$("reqSubmitClip").onclick = () => {
+  const r = collectRequest();
+  if (!r) return;
+  persistRequest(r);
+  const text = formatRequestText(r);
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("クリップボードにコピーしました(ローカルにも保存)");
+      });
+    } else {
+      // Fallback: select text in a temporary textarea
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      showToast("クリップボードにコピーしました");
+    }
+  } catch (e) {
+    showToast("コピーに失敗しました。ローカルには保存されています");
+  }
+  closeRequestForm();
+};
+
+$("reqSubmitLocal").onclick = () => {
+  const r = collectRequest();
+  if (!r) return;
+  persistRequest(r);
+  closeRequestForm();
+  showToast("ローカルに保存しました。メニュー「送信したリクエスト」から確認できます");
+};
+
+// ----- Settings -----
+function openSettings() {
+  $("destEmailInput").value = destEmail;
+  $("destFormInput").value = destForm;
+  $("settingsModal").classList.add("visible");
+}
+$("settingsCloseBtn").onclick = () => $("settingsModal").classList.remove("visible");
+$("settingsModal").onclick = (e) => {
+  if (e.target.id === "settingsModal") $("settingsModal").classList.remove("visible");
+};
+$("settingsSaveBtn").onclick = () => {
+  destEmail = $("destEmailInput").value.trim();
+  destForm = $("destFormInput").value.trim();
+  try {
+    localStorage.setItem(LS_DEST_EMAIL, destEmail);
+    localStorage.setItem(LS_DEST_FORM, destForm);
+  } catch (e) {}
+  $("settingsModal").classList.remove("visible");
+  showToast("送信先を保存しました");
+};
+
+// ----- Request List -----
+function openRequestList() {
+  const body = $("reqListBody");
+  if (!pendingRequests.length) {
+    body.innerHTML = `<div class="empty">送信したリクエストはまだありません。<br>メニュー「材質を追加リクエスト」から登録できます。</div>`;
+    $("reqListActions").style.display = "none";
+  } else {
+    const sorted = [...pendingRequests].sort((a,b) => b.id - a.id);
+    body.innerHTML = sorted.map(r => {
+      const d = new Date(r.createdAt);
+      const ds = d.toLocaleString("ja-JP");
+      return `<div class="req-item" data-id="${r.id}">
+        <div class="ri-name">${escapeHtml(r.name)}</div>
+        <div class="ri-meta">${escapeHtml(r.category || "種類未指定")} · ${ds}</div>
+        ${r.purpose ? `<div class="ri-body"><b>用途:</b> ${escapeHtml(r.purpose)}</div>` : ""}
+        ${r.spec ? `<div class="ri-body"><b>参考値:</b> ${escapeHtml(r.spec)}</div>` : ""}
+        ${r.note ? `<div class="ri-body"><b>備考:</b> ${escapeHtml(r.note)}</div>` : ""}
+        ${r.author ? `<div class="ri-meta">依頼者: ${escapeHtml(r.author)}</div>` : ""}
+        <div class="ri-actions">
+          <button class="ri-resend">再送信</button>
+          <button class="ri-copy">コピー</button>
+          <button class="del ri-del">削除</button>
+        </div>
+      </div>`;
+    }).join("");
+    $("reqListActions").style.display = "flex";
+
+    // attach handlers
+    body.querySelectorAll(".req-item").forEach(el => {
+      const id = parseInt(el.dataset.id, 10);
+      const r = pendingRequests.find(x => x.id === id);
+      el.querySelector(".ri-resend").onclick = () => {
+        if (!destEmail && !destForm) {
+          showToast("メール宛先またはフォームURLを先に設定してください");
+          return;
+        }
+        const text = formatRequestText(r);
+        if (destEmail) {
+          const subject = `[ボルトアプリ] 材質追加リクエスト: ${r.name}`;
+          window.location.href = `mailto:${destEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+        } else {
+          try { navigator.clipboard?.writeText(text); } catch (e) {}
+          window.open(destForm, "_blank");
+        }
+      };
+      el.querySelector(".ri-copy").onclick = () => {
+        const text = formatRequestText(r);
+        try {
+          navigator.clipboard?.writeText(text).then(() => showToast("コピーしました"));
+        } catch (e) {
+          showToast("コピーに失敗しました");
+        }
+      };
+      el.querySelector(".ri-del").onclick = () => {
+        if (!confirm(`「${r.name}」のリクエストを削除しますか?`)) return;
+        pendingRequests = pendingRequests.filter(x => x.id !== id);
+        try { localStorage.setItem(LS_REQUESTS, JSON.stringify(pendingRequests)); } catch (e) {}
+        updateRequestCount();
+        openRequestList();  // refresh
+      };
+    });
+  }
+  $("reqListModal").classList.add("visible");
+}
+$("reqListCloseBtn").onclick = () => $("reqListModal").classList.remove("visible");
+$("reqListModal").onclick = (e) => {
+  if (e.target.id === "reqListModal") $("reqListModal").classList.remove("visible");
+};
+$("reqListExport").onclick = () => {
+  const data = {
+    app: "ボルト・ねじ規格 早見表",
+    exportedAt: new Date().toISOString(),
+    requests: pendingRequests,
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `bolt-material-requests-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+  showToast("JSONをダウンロードしました");
+};
+$("reqListClear").onclick = () => {
+  if (!confirm(`保存されている${pendingRequests.length}件のリクエストをすべて削除しますか?\nこの操作は元に戻せません。`)) return;
+  pendingRequests = [];
+  try { localStorage.setItem(LS_REQUESTS, JSON.stringify(pendingRequests)); } catch (e) {}
+  updateRequestCount();
+  openRequestList();
+  showToast("全件を削除しました");
+};
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+  }[c]));
+}
 
 $("aboutCloseBtn").onclick = () => $("aboutModal").classList.remove("visible");
 $("aboutModal").onclick = (e) => {
@@ -2270,6 +2832,7 @@ if ("serviceWorker" in navigator) {
 }
 
 // init
+loadRequestSettings();
 render();
 
 // First-visit welcome
