@@ -1,7 +1,7 @@
 // Service Worker for ボルト・ねじ規格 早見表
 // バージョンを上げると古いキャッシュが自動破棄される
 
-const CACHE_VERSION = 'v1.0.0';
+const CACHE_VERSION = 'v1.1.0';
 const CACHE_NAME = `bolt-spec-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -36,20 +36,34 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
+  const req = event.request;
+  const isHtml = req.mode === 'navigate' || req.destination === 'document';
 
-      return fetch(event.request).then((response) => {
-        if (response.ok && new URL(event.request.url).origin === location.origin) {
+  if (isHtml) {
+    // HTML(画面遷移リクエスト): network-first にして、コード更新を即時反映。
+    // オフライン時のみキャッシュから返す。
+    event.respondWith(
+      fetch(req).then((response) => {
+        if (response.ok && new URL(req.url).origin === location.origin) {
           const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
         }
         return response;
-      }).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
+      }).catch(() => caches.match(req).then(c => c || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // それ以外(アイコン・マニフェスト等): cache-first。
+  event.respondWith(
+    caches.match(req).then((cached) => {
+      if (cached) return cached;
+      return fetch(req).then((response) => {
+        if (response.ok && new URL(req.url).origin === location.origin) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
         }
+        return response;
       });
     })
   );
