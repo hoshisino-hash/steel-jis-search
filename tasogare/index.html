@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1b2240">
+<meta name="description" content="薄明の書斎で、静かな少女と一緒に作業する。環境音とコンパニオン演出のデスクワーク伴走アプリ。">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="薄明">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<title>薄明 — a desk companion at twilight</title>
+<style>
+  :root {
+    /* 空（薄明グラデーション・既定は東雲寄り） */
+    --sky-top: #1b2240;
+    --sky-mid: #4a3a63;
+    --sky-low: #8a5a6a;
+    --sky-horizon: #d99a6c;
+
+    /* 室内・UI */
+    --ink: #f3eee6;
+    --ink-dim: #b9b2a8;
+    --ink-faint: #7d7a86;
+    --wood: #211b18;
+    --panel: rgba(20, 18, 28, 0.72);
+    --panel-solid: #1d1a24;
+    --line: #3a3442;
+
+    /* アクセント */
+    --star: #f5e6b8;
+    --accent: #c9788a;
+    --accent-cool: #6f7fb0;
+    --lamp: #f0b870;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    background: #0b1026;
+    color: var(--ink);
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+    overflow: hidden;
+  }
+
+  body { position: fixed; inset: 0; }
+
+  /* ===== 情景（空・窓・千宵） ===== */
+  #scene {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  #sky {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom,
+      var(--sky-top) 0%, var(--sky-mid) 40%, var(--sky-low) 72%, var(--sky-horizon) 100%);
+    transition: opacity 1.5s ease;
+  }
+
+  /* 地平の残光 */
+  #glow {
+    position: absolute;
+    left: 50%;
+    bottom: -18vh;
+    width: 140vw;
+    height: 60vh;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at center,
+      rgba(240,184,112,0.45) 0%, rgba(201,120,90,0.18) 40%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* 星 */
+  .star {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: var(--star);
+    border-radius: 50%;
+    opacity: 0.7;
+    animation: twinkle 4s ease-in-out infinite;
+  }
+  .star.bright {
+    width: 4px; height: 4px;
+    box-shadow: 0 0 8px 2px rgba(245,230,184,0.8);
+    opacity: 1;
+  }
+  @keyframes twinkle { 0%,100%{opacity:.25} 50%{opacity:.9} }
+
+  /* 流れる雲 */
+  .cloud {
+    position: absolute;
+    height: 70px;
+    width: 260px;
+    background: radial-gradient(ellipse at 50% 60%, rgba(60,50,75,0.55), transparent 70%);
+    filter: blur(6px);
+    animation: drift linear infinite;
+  }
+  @keyframes drift { from{transform:translateX(-30vw)} to{transform:translateX(120vw)} }
+
+  /* 窓枠 */
+  #window-frame {
+    position: absolute;
+    left: 50%;
+    top: 6vh;
+    width: min(78vw, 360px);
+    height: min(52vh, 380px);
+    transform: translateX(-50%);
+    border: 6px solid rgba(20,15,18,0.85);
+    border-radius: 4px 4px 0 0;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.3), inset 0 0 40px rgba(10,8,16,0.4);
+    pointer-events: none;
+  }
+  #window-frame::before { /* 縦桟 */
+    content:""; position:absolute; left:50%; top:0; bottom:0; width:5px;
+    background:rgba(20,15,18,0.85); transform:translateX(-50%);
+  }
+  #window-frame::after { /* 横桟 */
+    content:""; position:absolute; top:42%; left:0; right:0; height:5px;
+    background:rgba(20,15,18,0.85);
+  }
+
+  /* 千宵＋机（SVG） */
+  #companion {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: min(92vw, 460px);
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 3;
+  }
+  #companion svg { display:block; width:100%; height:auto; }
+
+  /* ランプの灯り */
+  #lamp-glow {
+    position:absolute;
+    width: 220px; height: 220px;
+    border-radius:50%;
+    background: radial-gradient(circle, rgba(240,184,112,0.35) 0%, transparent 65%);
+    pointer-events:none;
+    z-index:2;
+    animation: flicker 5s ease-in-out infinite;
+  }
+  @keyframes flicker { 0%,100%{opacity:.9} 45%{opacity:.7} 70%{opacity:1} }
+
+  /* ===== 千宵のアニメーション ===== */
+  #yoi-torso  { transform-box: fill-box; transform-origin: 50% 100%; animation: breathe 4.5s ease-in-out infinite; }
+  #yoi-head   { transform-box: fill-box; transform-origin: 50% 100%; animation: headsway 9s ease-in-out infinite; }
+  #yoi-hair-l, #yoi-hair-r { transform-box: fill-box; transform-origin: 50% 0%; animation: hairsway 7s ease-in-out infinite; }
+  #yoi-glint  { animation: glint 6s ease-in-out infinite; }
+  #yoi-arm    { transform-box: fill-box; transform-origin: 18% 30%; }
+
+  @keyframes breathe { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+  @keyframes headsway { 0%,100%{transform:rotate(0deg)} 35%{transform:rotate(-1.6deg)} 70%{transform:rotate(1deg)} }
+  @keyframes hairsway { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(1.4deg)} }
+  @keyframes glint { 0%,92%,100%{opacity:.25} 96%{opacity:.85} }
+
+  /* 作業中：書く手が小さく往復＋少し前傾 */
+  #scene.working #yoi-arm { animation: writing 0.9s ease-in-out infinite; }
+  #scene.working #yoi-torso { animation: breathe 5.5s ease-in-out infinite, lean 0.9s linear; animation-fill-mode: forwards; }
+  @keyframes writing { 0%,100%{transform:translate(0,0) rotate(0deg)} 50%{transform:translate(-2px,1px) rotate(-1.2deg)} }
+  @keyframes lean { to{transform:translateY(2px)} }
+
+  /* 休止中：手を止め、顔を上げる */
+  #scene.resting #yoi-arm { animation: none; }
+  #scene.resting #yoi-head { animation: lookup 3s ease-in-out forwards; }
+  @keyframes lookup { to{transform:rotate(-3deg) translateY(-1px)} }
+
+  @media (prefers-reduced-motion: reduce) {
+    #yoi-torso, #yoi-head, #yoi-hair-l, #yoi-hair-r, #yoi-glint, #yoi-arm,
+    .star, .cloud, #lamp-glow, #scene.working #yoi-arm, #scene.working #yoi-torso {
+      animation: none !important;
+    }
+  }
+
+  /* ===== 上部：タイトルと挨拶 ===== */
+  #topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: max(10px, env(safe-area-inset-top)) 16px 10px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    z-index: 10;
+  }
+  .title-jp { font-size: 18px; letter-spacing: 0.28em; text-shadow: 0 1px 6px rgba(0,0,0,0.6); }
+  .title-en { font-size: 10px; letter-spacing: 0.18em; color: var(--ink-dim); display:block; margin-top:2px; }
+  .icon-btn {
+    background: rgba(20,18,28,0.5);
+    border: 1px solid rgba(243,238,230,0.25);
+    color: var(--ink);
+    width: 38px; height: 38px;
+    font-size: 17px;
+    font-family: inherit;
+    border-radius: 50%;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+  }
+
+  /* 千宵の一言 */
+  #murmur {
+    position: absolute;
+    top: 14vh; left: 50%;
+    transform: translateX(-50%);
+    max-width: 80vw;
+    text-align: center;
+    font-size: 14px;
+    color: var(--ink);
+    text-shadow: 0 1px 8px rgba(0,0,0,0.7);
+    opacity: 0;
+    transition: opacity 1.2s ease;
+    z-index: 6;
+    pointer-events: none;
+  }
+  #murmur.show { opacity: 0.92; }
+
+  /* ===== 下部パネル ===== */
+  #dock {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 14px 14px max(14px, env(safe-area-inset-bottom));
+    z-index: 12;
+  }
+
+  /* 作業トグル＆経過時間 */
+  #worklane {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+  #work-btn {
+    background: linear-gradient(180deg, rgba(201,120,138,0.92), rgba(150,80,100,0.92));
+    color: #fff;
+    border: 1px solid rgba(245,230,184,0.4);
+    padding: 11px 26px;
+    font-size: 16px;
+    font-family: inherit;
+    letter-spacing: 0.12em;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  #work-btn.on {
+    background: linear-gradient(180deg, rgba(111,127,176,0.92), rgba(70,86,130,0.92));
+  }
+  #elapsed {
+    font-size: 17px;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+    min-width: 64px;
+  }
+
+  /* ミキサー（折りたたみ） */
+  #mixer {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    backdrop-filter: blur(12px);
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+  }
+  .mixer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 14px;
+    cursor: pointer;
+  }
+  .mixer-head .lbl { font-size: 13px; letter-spacing: 0.14em; color: var(--ink); }
+  .mixer-head .right { display:flex; align-items:center; gap:8px; }
+  #play-btn {
+    background: none;
+    border: 1px solid rgba(243,238,230,0.3);
+    color: var(--ink);
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  #play-btn.playing { background: rgba(245,230,184,0.18); border-color: var(--star); }
+  .chev { color: var(--ink-dim); font-size: 12px; transition: transform .3s; }
+  #mixer.collapsed .mixer-body { display:none; }
+  #mixer.collapsed .chev { transform: rotate(180deg); }
+
+  .mixer-body { padding: 4px 14px 14px; }
+
+  .slider-row {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 0;
+  }
+  .slider-row .name { font-size: 13px; color: var(--ink-dim); letter-spacing: 0.08em; }
+  .slider-row.master .name { color: var(--star); }
+
+  input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 4px;
+    background: var(--line);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 20px; height: 20px;
+    background: var(--accent);
+    border: 2px solid #fff3;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  input[type=range].master::-webkit-slider-thumb { background: var(--star); }
+  input[type=range]::-moz-range-thumb {
+    width: 18px; height: 18px; background: var(--accent);
+    border: 2px solid #fff3; border-radius: 50%; cursor: pointer;
+  }
+
+  /* プリセット行 */
+  .preset-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  .chip {
+    background: rgba(243,238,230,0.06);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    padding: 6px 13px;
+    font-size: 12px;
+    font-family: inherit;
+    border-radius: 16px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+  }
+  .chip:active { background: rgba(245,230,184,0.14); }
+  .chip.save { color: var(--star); border-color: rgba(245,230,184,0.4); }
+
+  /* ===== 設定モーダル ===== */
+  #overlay {
+    position: absolute; inset: 0;
+    background: rgba(8,6,14,0.6);
+    backdrop-filter: blur(3px);
+    z-index: 50;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  #overlay.show { display: flex; }
+  .modal {
+    background: var(--panel-solid);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 380px;
+    padding: 20px;
+  }
+  .modal h2 { font-size: 16px; letter-spacing: 0.12em; margin-bottom: 16px; font-weight: 500; }
+  .set-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 0; border-bottom: 1px solid var(--line);
+    font-size: 14px; color: var(--ink-dim);
+  }
+  .set-row select {
+    background: var(--wood); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 8px;
+    padding: 6px 10px; font-family: inherit; font-size: 14px;
+  }
+  .switch { position: relative; width: 46px; height: 26px; }
+  .switch input { display: none; }
+  .switch .track {
+    position:absolute; inset:0; background: var(--line);
+    border-radius: 13px; transition: background .2s;
+  }
+  .switch .track::after {
+    content:""; position:absolute; top:3px; left:3px;
+    width:20px; height:20px; background:#fff; border-radius:50%; transition: transform .2s;
+  }
+  .switch input:checked + .track { background: var(--accent); }
+  .switch input:checked + .track::after { transform: translateX(20px); }
+  .modal .close {
+    width: 100%; margin-top: 18px;
+    background: rgba(243,238,230,0.08);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    padding: 11px; border-radius: 10px;
+    font-family: inherit; font-size: 14px; letter-spacing: 0.1em;
+    cursor: pointer;
+  }
+  .modal .note { font-size: 11px; color: var(--ink-faint); margin-top: 14px; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<div id="scene">
+  <div id="sky"></div>
+  <div id="glow"></div>
+  <!-- 星・雲はJSで配置 -->
+  <div id="window-frame"></div>
+  <div id="lamp-glow"></div>
+
+  <div id="companion">
+    <!-- 千宵（ちよ）：薄明に背を照らされた、黒の似合う眼鏡の少女（シルエット主体） -->
+    <svg viewBox="0 0 460 300" xmlns="http://www.w3.org/2000/svg" aria-label="作業する千宵">
+      <defs>
+        <linearGradient id="silhouette" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#2a2333"/>
+          <stop offset="1" stop-color="#14101a"/>
+        </linearGradient>
+        <linearGradient id="deskg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#2b211c"/>
+          <stop offset="1" stop-color="#120d0a"/>
+        </linearGradient>
+        <radialGradient id="rim" cx="0.5" cy="0.2" r="0.8">
+          <stop offset="0" stop-color="rgba(240,184,112,0.5)"/>
+          <stop offset="1" stop-color="rgba(240,184,112,0)"/>
+        </radialGradient>
+      </defs>
+
+      <!-- 縁の光（薄明のリムライト） -->
+      <ellipse cx="230" cy="70" rx="150" ry="80" fill="url(#rim)"/>
+
+      <g id="yoi-torso">
+        <!-- 上体 -->
+        <path d="M150 300 C150 210 175 168 230 168 C285 168 310 210 310 300 Z" fill="url(#silhouette)"/>
+        <!-- 肩のリムライト -->
+        <path d="M168 210 C180 182 205 172 230 171 C214 178 198 192 188 214 Z" fill="rgba(240,184,112,0.16)"/>
+
+        <!-- 後ろ髪 -->
+        <g id="yoi-hair-l"><path d="M176 150 C150 175 150 240 168 290 C175 250 178 200 196 176 Z" fill="#100c15"/></g>
+        <g id="yoi-hair-r"><path d="M284 150 C310 175 310 240 292 290 C285 250 282 200 264 176 Z" fill="#0e0a13"/></g>
+
+        <g id="yoi-head">
+          <!-- 頭・顔 -->
+          <ellipse cx="230" cy="120" rx="40" ry="44" fill="url(#silhouette)"/>
+          <!-- 顔のリムライト（左上から薄明の光） -->
+          <path d="M196 104 C200 86 214 78 228 78 C214 84 204 96 200 112 Z" fill="rgba(240,184,112,0.22)"/>
+          <!-- 前髪 -->
+          <path d="M190 116 C188 86 210 76 230 76 C250 76 272 86 270 116 C262 100 250 96 240 110 C236 96 224 96 220 110 C210 96 198 100 190 116 Z" fill="#0c0810"/>
+          <!-- 眼鏡 -->
+          <g fill="none" stroke="rgba(220,210,235,0.55)" stroke-width="2.4">
+            <rect x="204" y="118" width="20" height="15" rx="5"/>
+            <rect x="236" y="118" width="20" height="15" rx="5"/>
+            <path d="M224 124 h12"/>
+            <path d="M204 122 l-9 -3"/>
+          </g>
+          <!-- レンズの光 -->
+          <rect id="yoi-glint" x="206" y="120" width="8" height="5" rx="2" fill="rgba(245,230,184,0.7)"/>
+        </g>
+      </g>
+
+      <!-- 机 -->
+      <rect x="40" y="262" width="380" height="38" fill="url(#deskg)"/>
+      <rect x="40" y="262" width="380" height="3" fill="rgba(240,184,112,0.18)"/>
+
+      <!-- 書く腕＋万年筆 -->
+      <g id="yoi-arm">
+        <path d="M214 196 C196 214 176 244 166 262 C180 260 196 258 208 252 C222 236 232 214 236 200 Z" fill="url(#silhouette)"/>
+        <!-- 袖口の光 -->
+        <path d="M170 258 C178 252 188 250 196 250 C190 256 182 260 172 262 Z" fill="rgba(111,127,176,0.18)"/>
+        <!-- 万年筆 -->
+        <rect x="158" y="252" width="22" height="4" rx="2" transform="rotate(28 169 254)" fill="#1a1620"/>
+      </g>
+
+      <!-- 紙・本 -->
+      <path d="M150 268 l70 -10 l8 22 l-70 10 Z" fill="rgba(243,238,230,0.82)"/>
+      <g stroke="rgba(120,110,130,0.5)" stroke-width="1.2">
+        <path d="M160 268 l54 -8"/>
+        <path d="M162 274 l54 -8"/>
+        <path d="M164 280 l40 -6"/>
+      </g>
+
+      <!-- 卓上ランプ -->
+      <g>
+        <rect x="338" y="236" width="6" height="28" fill="#1a1620"/>
+        <path d="M326 224 l32 0 l-6 16 l-20 0 Z" fill="#241c2a"/>
+        <ellipse cx="341" cy="240" rx="11" ry="4" fill="rgba(240,184,112,0.85)"/>
+        <rect x="320" y="262" width="42" height="5" rx="2" fill="#15111a"/>
+      </g>
+    </svg>
+  </div>
+
+  <div id="murmur"></div>
+</div>
+
+<div id="topbar">
+  <div>
+    <span class="title-jp">薄明</span>
+    <span class="title-en">a desk companion at twilight</span>
+  </div>
+  <button class="icon-btn" id="settings-btn" aria-label="設定">⚙</button>
+</div>
+
+<div id="dock">
+  <div id="worklane">
+    <button id="work-btn">作業をはじめる</button>
+    <span id="elapsed">00:00</span>
+  </div>
+
+  <div id="mixer" class="collapsed">
+    <div class="mixer-head" id="mixer-toggle">
+      <span class="lbl">環境音</span>
+      <div class="right">
+        <button id="play-btn" aria-label="再生/停止">▶</button>
+        <span class="chev">▲</span>
+      </div>
+    </div>
+    <div class="mixer-body" id="mixer-body">
+      <!-- スライダーはJSで生成 -->
+      <div class="preset-row" id="preset-row">
+        <!-- プリセットchipはJSで生成 -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="overlay">
+  <div class="modal">
+    <h2>設定</h2>
+    <div class="set-row">
+      <span>空の時間帯</span>
+      <select id="sky-select">
+        <option value="auto">自動（時刻に合わせる）</option>
+        <option value="shinonome">東雲（あけぼの）</option>
+        <option value="tasogare">黄昏（たそがれ）</option>
+        <option value="day">薄明の昼</option>
+        <option value="night">真夜</option>
+      </select>
+    </div>
+    <div class="set-row">
+      <span>動きを抑える</span>
+      <label class="switch">
+        <input type="checkbox" id="reduce-motion">
+        <span class="track"></span>
+      </label>
+    </div>
+    <div class="set-row">
+      <span>千宵の一言</span>
+      <label class="switch">
+        <input type="checkbox" id="murmur-toggle" checked>
+        <span class="track"></span>
+      </label>
+    </div>
+    <button class="close" id="close-settings">閉じる</button>
+    <p class="note">
+      環境音はすべて端末内で合成しています（音源ファイルなし）。<br>
+      設定とミックスはこの端末に保存されます。<br>
+      『薄明』v1 — 環境音とコンパニオン演出。
+    </p>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   薄明 — メインスクリプト
+   構成: ストレージ / 空 / 千宵の演出 / 環境音エンジン / ミキサー / 作業セッション
+   ========================================================= */
+
+const $ = (s) => document.querySelector(s);
+const clamp01 = (v) => Math.max(0, Math.min(1, v));
+const rand = (a, b) => a + Math.random() * (b - a);
+
+/* ---------- ストレージ ---------- */
+const Store = {
+  get(key, fallback) {
+    try { const v = localStorage.getItem("tasogare." + key); return v ? JSON.parse(v) : fallback; }
+    catch (e) { return fallback; }
+  },
+  set(key, val) {
+    try { localStorage.setItem("tasogare." + key, JSON.stringify(val)); } catch (e) {}
+  }
+};
+
+/* ---------- 環境音レイヤー定義 ---------- */
+const LAYER_DEFS = [
+  { id: "rain",  name: "雨" },
+  { id: "wind",  name: "風" },
+  { id: "fire",  name: "焚き火" },
+  { id: "wave",  name: "波" },
+  { id: "clock", name: "時計" },
+  { id: "night", name: "夜の静けさ" },
+];
+
+const DEFAULT_MIX = { rain: 0.0, wind: 0.0, fire: 0.0, wave: 0.0, clock: 0.0, night: 0.25 };
+
+const SEED_PRESETS = [
+  { name: "雨夜",     mix: { rain: 0.55, night: 0.22, wind: 0.10 } },
+  { name: "焚き火の夜", mix: { fire: 0.5, night: 0.2, wind: 0.08 } },
+  { name: "波打ち際",  mix: { wave: 0.5, wind: 0.16, night: 0.1 } },
+  { name: "静かな書斎", mix: { clock: 0.3, night: 0.2 } },
+];
+
+/* =========================================================
+   環境音エンジン（Web Audio・全てコード合成）
+   ========================================================= */
+const Audio = (() => {
+  let ctx = null;
+  let master = null;
+  let started = false;
+  const layers = {};       // id -> layer object
+  let writing = null;      // 筆記音レイヤー（作業中のみ）
+  let whiteBuf = null;
+
+  function makeNoiseBuffer(type, seconds) {
+    const len = Math.floor(ctx.sampleRate * seconds);
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    if (type === "white") {
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    } else if (type === "pink") {
+      let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+      for (let i = 0; i < len; i++) {
+        const w = Math.random() * 2 - 1;
+        b0 = 0.99886*b0 + w*0.0555179; b1 = 0.99332*b1 + w*0.0750759;
+        b2 = 0.96900*b2 + w*0.1538520; b3 = 0.86650*b3 + w*0.3104856;
+        b4 = 0.55000*b4 + w*0.5329522; b5 = -0.7616*b5 - w*0.0168980;
+        d[i] = (b0+b1+b2+b3+b4+b5+b6 + w*0.5362) * 0.11;
+        b6 = w * 0.115926;
+      }
+    } else { // brown
+      let last = 0;
+      for (let i = 0; i < len; i++) {
+        const w = Math.random() * 2 - 1;
+        last = (last + 0.02 * w) / 1.02;
+        d[i] = last * 3.5;
+      }
+    }
+    return buf;
+  }
+
+  function noiseSource(buf) {
+    const s = ctx.createBufferSource();
+    s.buffer = buf; s.loop = true; s.start();
+    return s;
+  }
+
+  // 短い破裂音（雨粒・薪の爆ぜ・筆記・時計）
+  function burst(opts, dest) {
+    const s = ctx.createBufferSource();
+    s.buffer = whiteBuf;
+    s.playbackRate.value = opts.rate || 1;
+    const f = ctx.createBiquadFilter();
+    f.type = opts.type || "bandpass";
+    f.frequency.value = opts.freq;
+    if (opts.q) f.Q.value = opts.q;
+    const g = ctx.createGain();
+    const t = ctx.currentTime;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(opts.level, t + (opts.attack || 0.004));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + opts.dur);
+    s.connect(f); f.connect(g); g.connect(dest);
+    s.start(t); s.stop(t + opts.dur + 0.03);
+  }
+
+  /* --- 各レイヤーの組み立て --- */
+  const builders = {
+    rain(out) {
+      const bed = noiseSource(makeNoiseBuffer("pink", 3));
+      const hp = ctx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=420;
+      const lp = ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=6500;
+      bed.connect(hp); hp.connect(lp); lp.connect(out);
+      const drip = () => burst({ freq: rand(2200,5200), q: rand(2,6), dur: 0.04, level: 0.18, rate: rand(0.8,1.3) }, out);
+      return { sources: [bed], schedule: { fn: drip, min: 70, max: 240 } };
+    },
+    wind(out) {
+      const bed = noiseSource(makeNoiseBuffer("brown", 3));
+      const lp = ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=600; lp.Q.value=0.5;
+      const lfo = ctx.createOscillator(); lfo.frequency.value=0.07;
+      const lfoG = ctx.createGain(); lfoG.gain.value=350;
+      lfo.connect(lfoG); lfoG.connect(lp.frequency); lfo.start();
+      bed.connect(lp); lp.connect(out);
+      return { sources: [bed], oscs: [lfo] };
+    },
+    fire(out) {
+      const bed = noiseSource(makeNoiseBuffer("brown", 3));
+      const lp = ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=480;
+      const bedG = ctx.createGain(); bedG.gain.value=0.7;
+      bed.connect(lp); lp.connect(bedG); bedG.connect(out);
+      const crackle = () => burst({ type:"highpass", freq: rand(1400,3500), dur: rand(0.02,0.06), level: rand(0.1,0.3), rate: rand(0.9,1.4) }, out);
+      return { sources: [bed], schedule: { fn: crackle, min: 50, max: 380 } };
+    },
+    wave(out) {
+      const bed = noiseSource(makeNoiseBuffer("pink", 3));
+      const lp = ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=1100;
+      const swell = ctx.createGain(); swell.gain.value=0.5;
+      const lfo = ctx.createOscillator(); lfo.frequency.value=0.11; lfo.type="sine";
+      const lfoG = ctx.createGain(); lfoG.gain.value=0.45;
+      lfo.connect(lfoG); lfoG.connect(swell.gain); lfo.start();
+      bed.connect(lp); lp.connect(swell); swell.connect(out);
+      return { sources: [bed], oscs: [lfo] };
+    },
+    clock(out) {
+      // 1秒周期の振り子（左右交互）
+      let side = 0;
+      const pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+      if (pan) pan.connect(out);
+      const target = pan || out;
+      const tick = () => {
+        if (pan) pan.pan.value = side ? 0.25 : -0.25;
+        side ^= 1;
+        burst({ type:"bandpass", freq: 2600, q: 8, dur: 0.03, level: 0.5, rate: 1 }, target);
+      };
+      return { schedule: { fn: tick, min: 1000, max: 1000 } };
+    },
+    night(out) {
+      const bed = noiseSource(makeNoiseBuffer("brown", 3));
+      const lp = ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=320;
+      const bedG = ctx.createGain(); bedG.gain.value=0.5;
+      bed.connect(lp); lp.connect(bedG); bedG.connect(out);
+      // ごく稀な虫の音
+      const cricket = () => {
+        const o = ctx.createOscillator(); o.type="square"; o.frequency.value=rand(3800,4600);
+        const cg = ctx.createGain(); const t = ctx.currentTime;
+        const reps = 3 + (Math.random()*3|0);
+        for (let i=0;i<reps;i++){
+          const tt = t + i*0.06;
+          cg.gain.setValueAtTime(0, tt);
+          cg.gain.linearRampToValueAtTime(0.03, tt+0.01);
+          cg.gain.exponentialRampToValueAtTime(0.0001, tt+0.05);
+        }
+        o.connect(cg); cg.connect(out); o.start(t); o.stop(t + reps*0.06 + 0.1);
+      };
+      return { sources: [bed], schedule: { fn: cricket, min: 4000, max: 11000 } };
+    },
+  };
+
+  function makeLayer(id) {
+    const gain = ctx.createGain(); gain.gain.value = 0; gain.connect(master);
+    return { id, gain, nodes: null, running: false, timer: null,
+      build() {
+        if (this.running) return;
+        this.nodes = builders[id](this.gain);
+        this.running = true;
+        const sc = this.nodes.schedule;
+        if (sc) {
+          const self = this;
+          (function loop() {
+            if (!self.running) return;
+            const g = self.gain.gain.value;
+            if (g > 0.001) sc.fn(g); // 破裂音の強度はレイヤーゲインを反映
+            self.timer = setTimeout(loop, rand(sc.min, sc.max));
+          })();
+        }
+      },
+      destroy() {
+        this.running = false;
+        if (this.timer) { clearTimeout(this.timer); this.timer = null; }
+        if (this.nodes) {
+          (this.nodes.sources||[]).forEach(s => { try{s.stop()}catch(e){} });
+          (this.nodes.oscs||[]).forEach(o => { try{o.stop()}catch(e){} });
+          this.nodes = null;
+        }
+      }
+    };
+  }
+
+  function buildWriting() {
+    const gain = ctx.createGain(); gain.gain.value = 0; gain.connect(master);
+    let running = false, timer = null;
+    function loop() {
+      if (!running) return;
+      // ザリッという短い筆記音
+      burst({ type:"bandpass", freq: rand(1600,3400), q: rand(3,7), dur: rand(0.03,0.07), level: rand(0.06,0.13), rate: rand(0.85,1.25) }, gain);
+      timer = setTimeout(loop, rand(160, 620));
+    }
+    return {
+      setActive(on) {
+        gain.gain.setTargetAtTime(on ? 0.7 : 0, ctx.currentTime, 0.2);
+        if (on && !running) { running = true; loop(); }
+        if (!on) { running = false; if (timer) clearTimeout(timer); }
+      }
+    };
+  }
+
+  return {
+    get started() { return started; },
+    get suspended() { return ctx && ctx.state === "suspended"; },
+    ensure() {
+      if (started) return;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      ctx = new AC();
+      master = ctx.createGain();
+      master.gain.value = Mixer.master;
+      master.connect(ctx.destination);
+      whiteBuf = makeNoiseBuffer("white", 1);
+      LAYER_DEFS.forEach(d => { layers[d.id] = makeLayer(d.id); });
+      writing = buildWriting();
+      started = true;
+    },
+    resume() { if (ctx && ctx.state === "suspended") ctx.resume(); },
+    suspend() { if (ctx && ctx.state === "running") ctx.suspend(); },
+    setMaster(v) { if (master) master.gain.setTargetAtTime(v, ctx.currentTime, 0.05); },
+    setLayer(id, v) {
+      const L = layers[id]; if (!L) return;
+      if (v > 0.001) { L.build(); L.gain.gain.setTargetAtTime(v, ctx.currentTime, 0.05); }
+      else { L.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.05); setTimeout(() => { if (L.gain.gain.value < 0.01) L.destroy(); }, 400); }
+    },
+    setWriting(on) { if (writing) writing.setActive(on); }
+  };
+})();
+
+/* =========================================================
+   ミキサー（UI＋状態）
+   ========================================================= */
+const Mixer = {
+  mix: Object.assign({}, DEFAULT_MIX, Store.get("mixer", {})),
+  master: (Store.get("settings", {}).masterVolume ?? 0.7),
+  presets: Store.get("presets", null) || SEED_PRESETS.slice(),
+  playing: false,
+
+  init() {
+    const body = $("#mixer-body");
+    const presetRow = $("#preset-row");
+
+    // マスター
+    body.insertBefore(this._sliderRow("master", "全体", this.master, true), presetRow);
+    // 各レイヤー
+    LAYER_DEFS.forEach(d => body.insertBefore(this._sliderRow(d.id, d.name, this.mix[d.id], false), presetRow));
+
+    this.renderPresets();
+
+    $("#play-btn").addEventListener("click", () => this.togglePlay());
+    $("#mixer-toggle").addEventListener("click", (e) => {
+      if (e.target.id === "play-btn") return;
+      $("#mixer").classList.toggle("collapsed");
+    });
+  },
+
+  _sliderRow(id, name, value, isMaster) {
+    const row = document.createElement("div");
+    row.className = "slider-row" + (isMaster ? " master" : "");
+    const lbl = document.createElement("span"); lbl.className = "name"; lbl.textContent = name;
+    const input = document.createElement("input");
+    input.type = "range"; input.min = "0"; input.max = "1"; input.step = "0.01";
+    input.value = value; input.dataset.id = id;
+    if (isMaster) input.className = "master";
+    input.addEventListener("input", () => {
+      const v = parseFloat(input.value);
+      if (isMaster) this.setMaster(v); else this.setLayer(id, v);
+      if (!this.playing && v > 0) this.togglePlay(true);
+    });
+    row.appendChild(lbl); row.appendChild(input);
+    return row;
+  },
+
+  setMaster(v) {
+    this.master = v; Audio.setMaster(v);
+    const s = Store.get("settings", {}); s.masterVolume = v; Store.set("settings", s);
+  },
+  setLayer(id, v) {
+    this.mix[id] = v;
+    if (this.playing) Audio.setLayer(id, v);
+    Store.set("mixer", this.mix);
+  },
+
+  togglePlay(force) {
+    const want = force !== undefined ? force : !this.playing;
+    if (want) {
+      Audio.ensure(); Audio.resume();
+      Audio.setMaster(this.master);
+      LAYER_DEFS.forEach(d => Audio.setLayer(d.id, this.mix[d.id]));
+      this.playing = true;
+    } else {
+      LAYER_DEFS.forEach(d => Audio.setLayer(d.id, 0));
+      Audio.setWriting(false);
+      Audio.suspend();
+      this.playing = false;
+    }
+    const btn = $("#play-btn");
+    btn.textContent = this.playing ? "❚❚" : "▶";
+    btn.classList.toggle("playing", this.playing);
+  },
+
+  applyMix(mix) {
+    // 全レイヤーを一旦0にしてから適用
+    const full = Object.assign({}, DEFAULT_MIX);
+    Object.keys(mix).forEach(k => { if (k in full) full[k] = mix[k]; });
+    this.mix = full;
+    Store.set("mixer", this.mix);
+    // スライダー反映
+    document.querySelectorAll('#mixer-body input[type=range]').forEach(inp => {
+      const id = inp.dataset.id;
+      if (id in full) inp.value = full[id];
+    });
+    if (!this.playing) this.togglePlay(true);
+    else LAYER_DEFS.forEach(d => Audio.setLayer(d.id, full[d.id]));
+  },
+
+  renderPresets() {
+    const row = $("#preset-row");
+    row.innerHTML = "";
+    this.presets.forEach((p, i) => {
+      const c = document.createElement("button");
+      c.className = "chip"; c.textContent = p.name;
+      c.addEventListener("click", () => this.applyMix(p.mix));
+      c.addEventListener("contextmenu", (e) => { e.preventDefault(); this.removePreset(i); });
+      row.appendChild(c);
+    });
+    const save = document.createElement("button");
+    save.className = "chip save"; save.textContent = "＋ 今の音を保存";
+    save.addEventListener("click", () => this.savePreset());
+    row.appendChild(save);
+  },
+
+  savePreset() {
+    const name = prompt("プリセット名", "わたしの夜");
+    if (!name) return;
+    const mix = {};
+    LAYER_DEFS.forEach(d => { if (this.mix[d.id] > 0.001) mix[d.id] = this.mix[d.id]; });
+    this.presets.push({ name, mix });
+    Store.set("presets", this.presets);
+    this.renderPresets();
+  },
+  removePreset(i) {
+    if (!confirm("「" + this.presets[i].name + "」を削除しますか？")) return;
+    this.presets.splice(i, 1);
+    Store.set("presets", this.presets);
+    this.renderPresets();
+  }
+};
+
+/* =========================================================
+   千宵の演出（状態機械）＋ 一言
+   ========================================================= */
+const MURMURS = [
+  "……まだ、起きてるんだ。",
+  "この時間が、すきなの。朝でも夜でもないから。",
+  "手を止めないで。わたしも、書くから。",
+  "星が、もう消えるね。",
+  "となりに、いるよ。",
+  "ふふ、いい音。",
+];
+
+const Companion = {
+  scene: $("#scene"),
+  state: "idle",
+  microTimer: null,
+  murmurTimer: null,
+  murmurOn: true,
+
+  setState(s) {
+    this.scene.classList.remove("working", "resting");
+    if (s === "working") this.scene.classList.add("working");
+    if (s === "resting") this.scene.classList.add("resting");
+    this.state = s;
+    Audio.setWriting(s === "working");
+  },
+
+  startWork() {
+    Audio.ensure(); Audio.resume();
+    if (!Mixer.playing && Object.values(Mixer.mix).some(v => v > 0)) Mixer.togglePlay(true);
+    this.setState("working");
+    this.scheduleMicroBreak();
+    this.murmur(pick(["手を止めないで。わたしも、書くから。", "となりに、いるよ。", "……はじめよう。"]));
+  },
+  stopWork() {
+    this.setState("resting");
+    if (this.microTimer) clearTimeout(this.microTimer);
+    setTimeout(() => { if (this.state === "resting") this.setState("idle"); }, 6000);
+    this.murmur(pick(["おつかれさま。", "よく、がんばったね。", "すこし、休もう。"]));
+  },
+
+  scheduleMicroBreak() {
+    if (this.microTimer) clearTimeout(this.microTimer);
+    this.microTimer = setTimeout(() => {
+      if (this.state !== "working") return;
+      this.setState("resting");
+      this.murmur(pick(["……ん、すこし伸び。", "星が、もう消えるね。", "ふう。"]));
+      setTimeout(() => { if (this.state === "resting") { this.setState("working"); this.scheduleMicroBreak(); } }, rand(5000, 9000));
+    }, rand(5*60*1000, 8*60*1000));
+  },
+
+  murmur(text) {
+    if (!this.murmurOn) return;
+    const el = $("#murmur");
+    el.textContent = text;
+    el.classList.add("show");
+    if (this.murmurTimer) clearTimeout(this.murmurTimer);
+    this.murmurTimer = setTimeout(() => el.classList.remove("show"), 4500);
+  },
+
+  setMurmurOn(on) { this.murmurOn = on; }
+};
+function pick(arr) { return arr[Math.random()*arr.length|0]; }
+
+/* =========================================================
+   作業セッション（経過時間・累計）
+   ========================================================= */
+const Session = {
+  on: false,
+  startAt: 0,
+  tick: null,
+
+  toggle() {
+    this.on ? this.stop() : this.start();
+  },
+  start() {
+    this.on = true;
+    this.startAt = Date.now();
+    const btn = $("#work-btn");
+    btn.textContent = "作業をおえる";
+    btn.classList.add("on");
+    Companion.startWork();
+    this.tick = setInterval(() => this.render(), 1000);
+    this.render();
+  },
+  stop() {
+    this.on = false;
+    clearInterval(this.tick);
+    const mins = Math.round((Date.now() - this.startAt) / 60000);
+    const s = Store.get("session", { totalMinutes: 0 });
+    s.totalMinutes = (s.totalMinutes || 0) + mins;
+    s.lastVisit = new Date().toISOString();
+    Store.set("session", s);
+    const btn = $("#work-btn");
+    btn.textContent = "作業をはじめる";
+    btn.classList.remove("on");
+    Companion.stopWork();
+    $("#elapsed").textContent = "00:00";
+  },
+  render() {
+    const sec = Math.floor((Date.now() - this.startAt) / 1000);
+    const m = String(Math.floor(sec / 60)).padStart(2, "0");
+    const s = String(sec % 60).padStart(2, "0");
+    $("#elapsed").textContent = m + ":" + s;
+  }
+};
+
+/* =========================================================
+   空（薄明グラデーション）
+   ========================================================= */
+const SKY = {
+  palettes: {
+    night:     ["#0b1026", "#1b2240", "#2e2a40", "#4a3a55"],
+    shinonome: ["#1b2240", "#46406a", "#8a5a6a", "#d99a6c"],
+    tasogare:  ["#2a2440", "#4a3a63", "#8a5a6a", "#c97a5a"],
+    day:       ["#3a4a72", "#6a7aa0", "#9aa6c0", "#c9b89a"],
+  },
+  mode: "auto",
+
+  init() {
+    this.mode = Store.get("settings", {}).skyMode || "auto";
+    this.apply();
+    // ゆっくり更新（自動モード時）
+    setInterval(() => { if (this.mode === "auto") this.apply(); }, 60000);
+  },
+  setMode(m) {
+    this.mode = m;
+    const s = Store.get("settings", {}); s.skyMode = m; Store.set("settings", s);
+    this.apply();
+  },
+  resolve() {
+    if (this.mode !== "auto") return this.mode;
+    const h = new Date().getHours();
+    if (h >= 21 || h < 4) return "night";
+    if (h < 8) return "shinonome";
+    if (h < 16) return "day";
+    return "tasogare";
+  },
+  apply() {
+    const p = this.palettes[this.resolve()];
+    const root = document.documentElement.style;
+    root.setProperty("--sky-top", p[0]);
+    root.setProperty("--sky-mid", p[1]);
+    root.setProperty("--sky-low", p[2]);
+    root.setProperty("--sky-horizon", p[3]);
+    document.querySelector('meta[name=theme-color]').setAttribute("content", p[0]);
+    // 残光・星の見え方
+    const isDay = this.resolve() === "day";
+    $("#glow").style.opacity = isDay ? 0.25 : 1;
+    document.querySelectorAll(".star").forEach(s => s.style.opacity = isDay ? 0 : "");
+  }
+};
+
+/* ---------- 星と雲の配置 ---------- */
+function buildSkyDecor() {
+  const scene = $("#scene");
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < 28; i++) {
+    const st = document.createElement("div");
+    st.className = "star" + (i === 0 ? " bright" : "");
+    st.style.left = rand(2, 98) + "vw";
+    st.style.top = rand(2, 46) + "vh";
+    st.style.animationDelay = rand(0, 4) + "s";
+    if (i === 0) { st.style.left = "70vw"; st.style.top = "16vh"; } // 一番星
+    frag.appendChild(st);
+  }
+  for (let i = 0; i < 3; i++) {
+    const c = document.createElement("div");
+    c.className = "cloud";
+    c.style.top = rand(8, 38) + "vh";
+    c.style.animationDuration = rand(60, 110) + "s";
+    c.style.animationDelay = "-" + rand(0, 60) + "s";
+    c.style.opacity = rand(0.4, 0.8);
+    frag.appendChild(c);
+  }
+  scene.insertBefore(frag, $("#window-frame"));
+}
+
+/* ---------- ランプの灯りを千宵の机に重ねる ---------- */
+function positionLamp() {
+  const comp = $("#companion").getBoundingClientRect();
+  const lamp = $("#lamp-glow");
+  lamp.style.left = (comp.left + comp.width * 0.72 - 110) + "px";
+  lamp.style.top = (comp.top + comp.height * 0.78 - 110) + "px";
+}
+
+/* =========================================================
+   設定モーダル
+   ========================================================= */
+function initSettings() {
+  const overlay = $("#overlay");
+  $("#settings-btn").addEventListener("click", () => overlay.classList.add("show"));
+  $("#close-settings").addEventListener("click", () => overlay.classList.remove("show"));
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.classList.remove("show"); });
+
+  const skySel = $("#sky-select");
+  skySel.value = SKY.mode;
+  skySel.addEventListener("change", () => SKY.setMode(skySel.value));
+
+  const rm = $("#reduce-motion");
+  const settings = Store.get("settings", {});
+  rm.checked = !!settings.reduceMotion;
+  applyReduceMotion(rm.checked);
+  rm.addEventListener("change", () => {
+    const s = Store.get("settings", {}); s.reduceMotion = rm.checked; Store.set("settings", s);
+    applyReduceMotion(rm.checked);
+  });
+
+  const mt = $("#murmur-toggle");
+  mt.checked = settings.murmur !== false;
+  Companion.setMurmurOn(mt.checked);
+  mt.addEventListener("change", () => {
+    const s = Store.get("settings", {}); s.murmur = mt.checked; Store.set("settings", s);
+    Companion.setMurmurOn(mt.checked);
+  });
+}
+function applyReduceMotion(on) {
+  document.documentElement.style.scrollBehavior = "auto";
+  document.body.classList.toggle("reduce-motion", on);
+  // CSSの @media に加え、強制クラスでも止める
+  let style = document.getElementById("rm-style");
+  if (on && !style) {
+    style = document.createElement("style"); style.id = "rm-style";
+    style.textContent = "body.reduce-motion *{animation:none !important}";
+    document.head.appendChild(style);
+  } else if (!on && style) { style.remove(); }
+}
+
+/* =========================================================
+   起動
+   ========================================================= */
+function boot() {
+  buildSkyDecor();
+  SKY.init();
+  Mixer.init();
+  initSettings();
+  positionLamp();
+  window.addEventListener("resize", positionLamp);
+
+  $("#work-btn").addEventListener("click", () => Session.toggle());
+
+  // タブ非表示で発音を絞る
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) Audio.suspend();
+    else if (Mixer.playing) Audio.resume();
+  });
+
+  // 初回の挨拶
+  setTimeout(() => Companion.murmur(pick(["……いらっしゃい。", "この時間が、すきなの。朝でも夜でもないから。", "となりに、いるよ。"])), 1200);
+
+  // Service Worker
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("service-worker.js").catch(()=>{}));
+  }
+}
+boot();
+</script>
+</body>
+</html>
