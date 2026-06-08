@@ -1,7 +1,7 @@
 // Service Worker for 薄明 (tasogare)
 // バージョンを上げると古いキャッシュが自動破棄される
 
-const CACHE_VERSION = 'v1.0.0';
+const CACHE_VERSION = 'v1.1.0';
 const CACHE_NAME = `tasogare-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [

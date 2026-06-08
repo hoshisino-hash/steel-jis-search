@@ -142,6 +142,10 @@
     z-index: 3;
   }
   #companion svg { display:block; width:100%; height:auto; }
+  #companion #rive-canvas { display:none; width:100%; height:auto; }
+  /* Rive(最終キャラ)が読み込めたらSVG暫定版を隠してcanvasを表示 */
+  #companion.rive-on svg { display:none; }
+  #companion.rive-on #rive-canvas { display:block; }
 
   /* ランプの灯り */
   #lamp-glow {
@@ -419,7 +423,9 @@
   <div id="lamp-glow"></div>
 
   <div id="companion">
-    <!-- 千宵（ちよ）：薄明に背を照らされた、黒の似合う眼鏡の少女（シルエット主体） -->
+    <!-- 最終キャラ(Rive)が lib/ に揃うと自動でこのcanvasに切替。無ければ下のSVG暫定版を表示 -->
+    <canvas id="rive-canvas" width="460" height="300"></canvas>
+    <!-- 千宵（ちよ）：薄明に背を照らされた、黒の似合う眼鏡の少女（シルエット主体・暫定プレースホルダ） -->
     <svg viewBox="0 0 460 300" xmlns="http://www.w3.org/2000/svg" aria-label="作業する千宵">
       <defs>
         <linearGradient id="silhouette" x1="0" y1="0" x2="0" y2="1">
@@ -557,6 +563,13 @@
       <span>千宵の一言</span>
       <label class="switch">
         <input type="checkbox" id="murmur-toggle" checked>
+        <span class="track"></span>
+      </label>
+    </div>
+    <div class="set-row">
+      <span>声で話す（試験・端末の音声合成）</span>
+      <label class="switch">
+        <input type="checkbox" id="voice-toggle">
         <span class="track"></span>
       </label>
     </div>
@@ -965,6 +978,7 @@ const Companion = {
     if (s === "resting") this.scene.classList.add("resting");
     this.state = s;
     Audio.setWriting(s === "working");
+    Renderer.setState(s);   // 最終キャラ(Rive)にも同じ状態を伝える（継ぎ目）
   },
 
   startWork() {
@@ -998,11 +1012,128 @@ const Companion = {
     el.classList.add("show");
     if (this.murmurTimer) clearTimeout(this.murmurTimer);
     this.murmurTimer = setTimeout(() => el.classList.remove("show"), 4500);
+    Voice.speak(text);   // 声がONなら読み上げ＋口パク
   },
 
   setMurmurOn(on) { this.murmurOn = on; }
 };
 function pick(arr) { return arr[Math.random()*arr.length|0]; }
+
+/* =========================================================
+   レンダラ（描画の継ぎ目）
+   暫定: コード手描きSVG ／ 最終: Rive(.riv)。lib/rive.min.js と chiyo.riv が
+   揃えば自動でRiveに切替。Companion.setState() からのみ駆動される。
+   ---------------------------------------------------------
+   ★Rive側の契約（リギング時にこの名前で作る）:
+     ステートマシン名: "Chiyo"
+     入力: working(Bool) / resting(Bool) / idle(Bool) / mouth(Number 0..100)
+   ========================================================= */
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src; s.async = true;
+    s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+const Renderer = {
+  mode: "svg",        // "svg" | "rive"
+  rive: null,
+  inputs: {},
+
+  async init() {
+    // Riveランタイムとモデルが用意されていれば読み込む。無ければSVGのまま。
+    try {
+      if (!window.rive) await loadScript("lib/rive.min.js");
+      if (!window.rive) return;
+      const canvas = document.getElementById("rive-canvas");
+      this.rive = new window.rive.Rive({
+        src: "chiyo.riv",
+        canvas,
+        autoplay: true,
+        stateMachines: "Chiyo",
+        onLoad: () => {
+          this.mode = "rive";
+          document.getElementById("companion").classList.add("rive-on");
+          const ins = this.rive.stateMachineInputs("Chiyo") || [];
+          ins.forEach(i => { this.inputs[i.name] = i; });
+          try { this.rive.resizeDrawingSurfaceToCanvas(); } catch (e) {}
+          this.setState(Companion.state);
+        },
+        onLoadError: () => { /* SVGのまま */ },
+      });
+    } catch (e) { /* ランタイム/モデル未配置 → SVG暫定版を継続 */ }
+  },
+
+  setState(s) {
+    if (this.mode !== "rive") return;
+    const I = this.inputs;
+    if (I.working) I.working.value = (s === "working");
+    if (I.resting) I.resting.value = (s === "resting");
+    if (I.idle)    I.idle.value    = (s === "idle");
+  },
+
+  setMouth(v) { // 0..1
+    if (this.mode === "rive" && this.inputs.mouth) this.inputs.mouth.value = Math.round(clamp01(v) * 100);
+  },
+
+  pause() { if (this.rive) try { this.rive.pause(); } catch (e) {} },
+  play()  { if (this.rive) try { this.rive.play(); }  catch (e) {} },
+};
+
+/* =========================================================
+   ボイス（喋る）＝端末の音声合成 Web Speech API
+   将来は収録ボイス/VOICEVOX等の音声ファイル再生に差し替え可能。
+   ========================================================= */
+const Voice = {
+  on: false,
+  voice: null,
+
+  init() {
+    this.on = Store.get("settings", {}).voice === true;
+    if (!("speechSynthesis" in window)) return;
+    const pickVoice = () => {
+      const vs = window.speechSynthesis.getVoices() || [];
+      this.voice = vs.find(v => v.lang && v.lang.toLowerCase().startsWith("ja")) || null;
+    };
+    pickVoice();
+    window.speechSynthesis.onvoiceschanged = pickVoice;
+  },
+
+  speak(text) {
+    if (!this.on || !("speechSynthesis" in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      if (this.voice) u.voice = this.voice;
+      u.lang = "ja-JP"; u.rate = 0.9; u.pitch = 1.06; u.volume = 0.9;
+      u.onstart = () => LipSync.start();
+      u.onend   = () => LipSync.stop();
+      u.onerror = () => LipSync.stop();
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  },
+
+  setOn(v) {
+    this.on = v;
+    if (!v && "speechSynthesis" in window) { try { window.speechSynthesis.cancel(); } catch (e) {} LipSync.stop(); }
+  }
+};
+
+/* 口パク：Web Speech APIは音声波形を取得できないため、発話中は擬似的に口を開閉。
+   （収録ボイスを使う場合は AnalyserNode で実波形に同期する実装へ差し替え可能） */
+const LipSync = {
+  timer: null,
+  start() {
+    this.stop();
+    this.timer = setInterval(() => Renderer.setMouth(0.2 + Math.random() * 0.8), 110);
+  },
+  stop() {
+    if (this.timer) { clearInterval(this.timer); this.timer = null; }
+    Renderer.setMouth(0);
+  }
+};
 
 /* =========================================================
    作業セッション（経過時間・累計）
@@ -1155,6 +1286,14 @@ function initSettings() {
     const s = Store.get("settings", {}); s.murmur = mt.checked; Store.set("settings", s);
     Companion.setMurmurOn(mt.checked);
   });
+
+  const vt = $("#voice-toggle");
+  vt.checked = settings.voice === true;
+  vt.addEventListener("change", () => {
+    const s = Store.get("settings", {}); s.voice = vt.checked; Store.set("settings", s);
+    Voice.setOn(vt.checked);
+    if (vt.checked) Companion.murmur(pick(["……ん、きこえる？", "となりに、いるよ。"]));
+  });
 }
 function applyReduceMotion(on) {
   document.documentElement.style.scrollBehavior = "auto";
@@ -1175,16 +1314,24 @@ function boot() {
   buildSkyDecor();
   SKY.init();
   Mixer.init();
+  Voice.init();
   initSettings();
+  Renderer.init();   // 最終キャラ(Rive)があれば読み込み。無ければSVG暫定版のまま
   positionLamp();
   window.addEventListener("resize", positionLamp);
 
   $("#work-btn").addEventListener("click", () => Session.toggle());
 
-  // タブ非表示で発音を絞る
+  // タブ非表示で発音・描画を絞る（軽量化）
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) Audio.suspend();
-    else if (Mixer.playing) Audio.resume();
+    if (document.hidden) {
+      Audio.suspend(); Renderer.pause();
+      if ("speechSynthesis" in window) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+      LipSync.stop();
+    } else {
+      if (Mixer.playing) Audio.resume();
+      Renderer.play();
+    }
   });
 
   // 初回の挨拶
