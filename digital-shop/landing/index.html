@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="現場で使える鋼材重量計算ツール。形状と寸法を入れるだけで単重・総重量を即計算。買い切り・オフライン動作・スマホ対応。">
+<title>鋼材重量計算ツール — 現場のための買い切りアプリ</title>
+<style>
+  :root{
+    --bg:#0f1419; --card:#1a2129; --line:#2e3a47; --text:#e8edf2;
+    --sub:#8fa0b0; --accent:#f59e0b; --accent2:#fbbf24; --ok:#34d399;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text); line-height:1.8;
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  }
+  .hero{
+    text-align:center; padding:64px 20px 48px;
+    background:linear-gradient(160deg,#1a2129,#243042 60%,#1f2a1f);
+    border-bottom:2px solid var(--accent);
+  }
+  .hero .badge{
+    display:inline-block; font-size:.75rem; color:var(--accent2);
+    border:1px solid var(--accent); border-radius:99px; padding:3px 14px; margin-bottom:18px;
+  }
+  .hero h1{font-size:1.7rem; margin:0 0 14px; letter-spacing:.03em;}
+  .hero p{color:var(--sub); max-width:480px; margin:0 auto 28px; font-size:.95rem;}
+  .cta{
+    display:inline-block; background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#1a1305; font-weight:700; font-size:1.05rem; text-decoration:none;
+    padding:15px 44px; border-radius:99px; box-shadow:0 4px 20px rgba(245,158,11,.35);
+  }
+  .cta:active{transform:translateY(1px);}
+  .price{margin-top:14px; font-size:.85rem; color:var(--sub);}
+  .price b{color:var(--ok); font-size:1.3rem;}
+  section{max-width:640px; margin:0 auto; padding:40px 20px 8px;}
+  section h2{font-size:1.15rem; color:var(--accent2); border-left:4px solid var(--accent); padding-left:12px;}
+  .features{display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:0; list-style:none;}
+  .features li{
+    background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:14px; font-size:.85rem;
+  }
+  .features li b{display:block; margin-bottom:4px; font-size:.92rem;}
+  .features li .ic{font-size:1.3rem;}
+  .target{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:6px 18px; font-size:.88rem;}
+  .faq dt{font-weight:700; margin-top:18px; color:var(--accent2); font-size:.92rem;}
+  .faq dd{margin:4px 0 0; color:var(--sub); font-size:.86rem;}
+  .bottom-cta{text-align:center; padding:48px 20px 64px;}
+  footer{
+    text-align:center; font-size:.72rem; color:var(--sub);
+    border-top:1px solid var(--line); padding:24px 16px 36px;
+  }
+  footer a{color:var(--sub);}
+  @media (max-width:480px){ .features{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <span class="badge">買い切り ¥0サブスク・広告なし</span>
+  <h1>⚖️ 鋼材重量計算ツール</h1>
+  <p>「この材料、何キロ?」に3秒で答える。<br>
+  形状と寸法を入れるだけで単重(kg/m)と総重量を即計算。<br>
+  電波の届かない工場の中でも動きます。</p>
+  <!-- TODO: 下のhrefをBOOTH/Gumroadの商品ページURLに差し替える -->
+  <a class="cta" href="#" id="buyBtn">今すぐ手に入れる</a>
+  <div class="price">価格: <b>¥500</b>(買い切り・追加課金なし)</div>
+</div>
+
+<section>
+  <h2>こんな経験ありませんか?</h2>
+  <div class="target">
+    <p>✅ クレーン吊りの前に重量を概算したいが、規格表をめくるのが面倒</p>
+    <p>✅ 端材・特注寸法は規格表に載っていない</p>
+    <p>✅ 事務所のPCまで戻らないと計算できない</p>
+    <p>✅ 電卓で「幅×厚さ×長さ×比重」を毎回手打ちして、桁を間違える</p>
+  </div>
+</section>
+
+<section>
+  <h2>このツールでできること</h2>
+  <ul class="features">
+    <li><span class="ic">📐</span><b>8形状に対応</b>鋼板・平鋼・丸鋼・角鋼・六角鋼・丸パイプ・角パイプ・山形鋼(近似)</li>
+    <li><span class="ic">🧲</span><b>7材質の比重を内蔵</b>鉄・SUS304/430・アルミ・銅・真鍮・チタン+手入力対応</li>
+    <li><span class="ic">📴</span><b>完全オフライン</b>1ファイルのHTML。一度開けば圏外の現場でも動作</li>
+    <li><span class="ic">📋</span><b>履歴とコピー</b>計算結果をワンタップでコピー、端末内に履歴保存</li>
+    <li><span class="ic">📱</span><b>スマホ最適化</b>軍手を外した片手で操作できる大きめUI</li>
+    <li><span class="ic">💸</span><b>買い切り</b>サブスク・広告・アカウント登録すべてなし</li>
+  </ul>
+</section>
+
+<section>
+  <h2>よくある質問</h2>
+  <dl class="faq">
+    <dt>Q. どうやって使うの?</dt>
+    <dd>購入するとHTMLファイルが1つ届きます。スマホやPCのブラウザで開くだけ。ホーム画面に追加すればアプリのように使えます。</dd>
+    <dt>Q. H形鋼や溝形鋼は計算できる?</dt>
+    <dd>形鋼類はフィレット形状の影響が大きいため、本ツールは理論断面の計算に対応する形状のみ収録しています(山形鋼は近似値)。形鋼はJIS規格表の単位質量をご参照ください。</dd>
+    <dt>Q. 計算値はどのくらい正確?</dt>
+    <dd>断面積×比重による理論値です。角Rを考慮しないため、規格表値とは数%の差が出る場合があります。吊り計画など安全に関わる用途では必ず余裕を見てください。</dd>
+    <dt>Q. アップデートは?</dt>
+    <dd>形状追加などの更新版は、購入者は無償で再ダウンロードできます(販売プラットフォームの再DL機能を利用)。</dd>
+  </dl>
+</section>
+
+<div class="bottom-cta">
+  <!-- TODO: 下のhrefもBOOTH/Gumroadの商品ページURLに差し替える -->
+  <a class="cta" href="#" id="buyBtn2">¥500で手に入れる</a>
+  <div class="price">支払いはBOOTH/Gumroadの決済システムを利用します</div>
+</div>
+
+<footer>
+  <p>制作・販売: <!-- TODO: 屋号またはハンドルネーム --> /
+  お問い合わせ: <!-- TODO: 連絡先(問い合わせフォームURLなど) --></p>
+  <p>※ 本ツールの計算結果に起因する損害について、製作者は責任を負いかねます。最終確認は規格表・ミルシートで行ってください。</p>
+</footer>
+
+</body>
+</html>

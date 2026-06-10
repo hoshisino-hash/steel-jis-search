@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="鋼材・金属材料の重量を形状と寸法から即計算。鋼板・平鋼・丸鋼・角鋼・六角鋼・丸パイプ・角パイプ対応。オフラインで動く買い切りツール。">
+<title>鋼材重量計算ツール</title>
+<style>
+  :root{
+    --bg:#0f1419; --card:#1a2129; --card2:#212a35; --line:#2e3a47;
+    --text:#e8edf2; --sub:#8fa0b0; --accent:#f59e0b; --accent2:#fbbf24;
+    --ok:#34d399;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+    line-height:1.6; padding-bottom:env(safe-area-inset-bottom);
+  }
+  header{
+    background:linear-gradient(135deg,#1a2129,#243042);
+    padding:18px 16px 14px; border-bottom:2px solid var(--accent);
+    position:sticky; top:0; z-index:10;
+  }
+  header h1{margin:0; font-size:1.15rem; letter-spacing:.05em;}
+  header p{margin:2px 0 0; font-size:.75rem; color:var(--sub);}
+  main{max-width:560px; margin:0 auto; padding:16px;}
+  .card{
+    background:var(--card); border:1px solid var(--line);
+    border-radius:14px; padding:16px; margin-bottom:14px;
+  }
+  .card h2{margin:0 0 10px; font-size:.85rem; color:var(--accent2); letter-spacing:.08em;}
+  .shape-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px;}
+  .shape-btn{
+    background:var(--card2); border:1px solid var(--line); color:var(--text);
+    border-radius:10px; padding:10px 4px; font-size:.78rem; cursor:pointer;
+    text-align:center; transition:border-color .15s,background .15s;
+  }
+  .shape-btn .icon{display:block; font-size:1.2rem; margin-bottom:2px;}
+  .shape-btn.active{border-color:var(--accent); background:#2a2415; color:var(--accent2); font-weight:600;}
+  label{display:block; font-size:.78rem; color:var(--sub); margin:10px 0 4px;}
+  input,select{
+    width:100%; background:var(--card2); border:1px solid var(--line);
+    color:var(--text); border-radius:10px; padding:11px 12px; font-size:1.05rem;
+  }
+  input:focus,select:focus{outline:none; border-color:var(--accent);}
+  .row{display:flex; gap:10px;}
+  .row>div{flex:1;}
+  .result{
+    background:linear-gradient(135deg,#2a2415,#1f2a1f);
+    border:1px solid var(--accent); border-radius:14px; padding:16px; margin-bottom:14px;
+  }
+  .result .unit-w{font-size:.85rem; color:var(--sub);}
+  .result .unit-w b{color:var(--accent2); font-size:1.2rem;}
+  .result .total{margin-top:6px; font-size:.9rem;}
+  .result .total b{color:var(--ok); font-size:1.8rem; letter-spacing:.02em;}
+  .btns{display:flex; gap:10px; margin-top:12px;}
+  button.action{
+    flex:1; background:var(--card2); border:1px solid var(--line); color:var(--text);
+    border-radius:10px; padding:10px; font-size:.85rem; cursor:pointer;
+  }
+  button.action:active{background:#2e3a47;}
+  .hist-item{
+    display:flex; justify-content:space-between; gap:8px;
+    border-bottom:1px solid var(--line); padding:8px 2px; font-size:.8rem;
+  }
+  .hist-item:last-child{border-bottom:none;}
+  .hist-item .desc{color:var(--sub); flex:1;}
+  .hist-item .val{color:var(--ok); white-space:nowrap; font-weight:600;}
+  .note{font-size:.72rem; color:var(--sub); margin-top:8px;}
+  footer{max-width:560px; margin:0 auto; padding:0 16px 28px; font-size:.7rem; color:var(--sub);}
+  .toast{
+    position:fixed; left:50%; bottom:30px; transform:translateX(-50%);
+    background:var(--accent); color:#1a1305; padding:8px 18px; border-radius:99px;
+    font-size:.82rem; font-weight:600; opacity:0; transition:opacity .25s; pointer-events:none;
+  }
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚖️ 鋼材重量計算ツール</h1>
+  <p>形状と寸法を入れるだけ。単重・総重量を即計算(オフライン対応)</p>
+</header>
+
+<main>
+  <div class="card">
+    <h2>① 形状を選ぶ</h2>
+    <div class="shape-grid" id="shapeGrid"></div>
+  </div>
+
+  <div class="card">
+    <h2>② 寸法・条件を入れる</h2>
+    <label>材質(比重)</label>
+    <select id="material">
+      <option value="7.85" selected>鉄・鋼 (7.85)</option>
+      <option value="7.93">SUS304 (7.93)</option>
+      <option value="7.70">SUS430 (7.70)</option>
+      <option value="2.70">アルミ (2.70)</option>
+      <option value="8.96">銅 (8.96)</option>
+      <option value="8.50">真鍮 (8.50)</option>
+      <option value="4.51">チタン (4.51)</option>
+      <option value="custom">手入力…</option>
+    </select>
+    <div id="customDensityWrap" style="display:none">
+      <label>比重(g/cm³)</label>
+      <input type="number" id="customDensity" inputmode="decimal" placeholder="例: 7.85">
+    </div>
+    <div id="dims"></div>
+    <div class="row">
+      <div>
+        <label>長さ(mm)</label>
+        <input type="number" id="length" inputmode="decimal" placeholder="例: 6000">
+      </div>
+      <div>
+        <label>本数</label>
+        <input type="number" id="qty" inputmode="numeric" value="1" min="1">
+      </div>
+    </div>
+  </div>
+
+  <div class="result">
+    <div class="unit-w">単重: <b id="unitWeight">—</b> kg/m</div>
+    <div class="total">総重量: <b id="totalWeight">—</b> kg <span id="tonNote" style="color:var(--sub);font-size:.78rem;"></span></div>
+    <div class="btns">
+      <button class="action" id="copyBtn">📋 結果をコピー</button>
+      <button class="action" id="saveBtn">💾 履歴に残す</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>計算履歴(端末内に保存)</h2>
+    <div id="history"><div class="note">まだ履歴はありません</div></div>
+    <div class="btns"><button class="action" id="clearHist">履歴を全消去</button></div>
+  </div>
+</main>
+
+<footer>
+  ※ 断面形状からの理論計算値です(角R・フィレットは考慮しません)。形鋼(H形鋼・山形鋼・溝形鋼など)はJIS規格表の単位質量をご参照ください。発注・強度計算の最終確認はミルシート・規格表で行ってください。
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+// 断面積はmm²で計算し、kg/m = 面積(mm²) × 比重(g/cm³) / 1000
+const SHAPES = [
+  {id:'plate',  name:'鋼板',     icon:'▬', dims:[{k:'t',l:'板厚 t (mm)'},{k:'w',l:'幅 w (mm)'}],          area:d=>d.t*d.w},
+  {id:'flat',   name:'平鋼',     icon:'▭', dims:[{k:'t',l:'厚さ t (mm)'},{k:'w',l:'幅 w (mm)'}],          area:d=>d.t*d.w},
+  {id:'round',  name:'丸鋼',     icon:'●', dims:[{k:'d',l:'径 d (mm)'}],                                  area:d=>Math.PI/4*d.d*d.d},
+  {id:'square', name:'角鋼',     icon:'■', dims:[{k:'a',l:'一辺 a (mm)'}],                                area:d=>d.a*d.a},
+  {id:'hex',    name:'六角鋼',   icon:'⬢', dims:[{k:'s',l:'対辺 s (mm)'}],                                area:d=>Math.sqrt(3)/2*d.s*d.s},
+  {id:'pipe',   name:'丸パイプ', icon:'◎', dims:[{k:'D',l:'外径 D (mm)'},{k:'t',l:'肉厚 t (mm)'}],        area:d=>Math.PI/4*(d.D*d.D-Math.pow(d.D-2*d.t,2))},
+  {id:'sqtube', name:'角パイプ', icon:'回', dims:[{k:'A',l:'外寸 A (mm)'},{k:'B',l:'外寸 B (mm)'},{k:'t',l:'肉厚 t (mm)'}], area:d=>d.A*d.B-(d.A-2*d.t)*(d.B-2*d.t)},
+  {id:'angle',  name:'山形鋼≒',  icon:'∟', dims:[{k:'A',l:'辺 A (mm)'},{k:'B',l:'辺 B (mm)'},{k:'t',l:'厚さ t (mm)'}],     area:d=>(d.A+d.B-d.t)*d.t},
+];
+let current = SHAPES[0];
+
+const $ = id => document.getElementById(id);
+const grid = $('shapeGrid');
+SHAPES.forEach(s=>{
+  const b = document.createElement('button');
+  b.className = 'shape-btn' + (s===current?' active':'');
+  b.innerHTML = `<span class="icon">${s.icon}</span>${s.name}`;
+  b.onclick = ()=>{ current=s; document.querySelectorAll('.shape-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderDims(); calc(); };
+  grid.appendChild(b);
+});
+
+function renderDims(){
+  $('dims').innerHTML = current.dims.map(d=>
+    `<label>${d.l}</label><input type="number" inputmode="decimal" data-dim="${d.k}" placeholder="0">`
+  ).join('');
+  document.querySelectorAll('#dims input').forEach(i=>i.addEventListener('input',calc));
+}
+
+function density(){
+  const v = $('material').value;
+  if(v==='custom') return parseFloat($('customDensity').value)||0;
+  return parseFloat(v);
+}
+
+function calc(){
+  const dims = {};
+  let ok = true;
+  document.querySelectorAll('#dims input').forEach(i=>{
+    const v = parseFloat(i.value);
+    if(!(v>0)) ok = false;
+    dims[i.dataset.dim] = v;
+  });
+  const rho = density();
+  if(!ok || !(rho>0)){ $('unitWeight').textContent='—'; $('totalWeight').textContent='—'; $('tonNote').textContent=''; return; }
+  const unit = current.area(dims)*rho/1000; // kg/m
+  $('unitWeight').textContent = fmt(unit);
+  const L = parseFloat($('length').value);
+  const q = parseInt($('qty').value)||1;
+  if(L>0){
+    const total = unit*(L/1000)*q;
+    $('totalWeight').textContent = fmt(total);
+    $('tonNote').textContent = total>=1000 ? `(${fmt(total/1000)} t)` : '';
+  }else{
+    $('totalWeight').textContent='—'; $('tonNote').textContent='';
+  }
+}
+function fmt(n){ return n>=100 ? n.toFixed(1) : n.toFixed(2).replace(/\.?0+$/,'') || '0'; }
+
+function summary(){
+  const dims = [...document.querySelectorAll('#dims input')].map(i=>`${i.dataset.dim}${i.value}`).join('×');
+  const mat = $('material').selectedOptions[0].textContent.split(' ')[0];
+  const L = $('length').value, q = $('qty').value;
+  let s = `${current.name} ${mat} ${dims}`;
+  if(L) s += ` L${L}×${q}本`;
+  return s;
+}
+
+$('material').addEventListener('change',()=>{
+  $('customDensityWrap').style.display = $('material').value==='custom'?'block':'none';
+  calc();
+});
+$('customDensity')?.addEventListener('input',calc);
+$('length').addEventListener('input',calc);
+$('qty').addEventListener('input',calc);
+
+$('copyBtn').onclick = ()=>{
+  if($('unitWeight').textContent==='—') return toast('先に寸法を入力してください');
+  const text = `${summary()} → 単重 ${$('unitWeight').textContent} kg/m, 総重量 ${$('totalWeight').textContent} kg`;
+  navigator.clipboard?.writeText(text).then(()=>toast('コピーしました')).catch(()=>toast('コピーできませんでした'));
+};
+
+const HKEY = 'steel-weight-calc-history';
+function loadHist(){ try{ return JSON.parse(localStorage.getItem(HKEY))||[] }catch(e){ return [] } }
+function renderHist(){
+  const h = loadHist();
+  $('history').innerHTML = h.length
+    ? h.map(x=>`<div class="hist-item"><span class="desc">${x.desc}</span><span class="val">${x.val}</span></div>`).join('')
+    : '<div class="note">まだ履歴はありません</div>';
+}
+$('saveBtn').onclick = ()=>{
+  if($('unitWeight').textContent==='—') return toast('先に寸法を入力してください');
+  const h = loadHist();
+  h.unshift({desc:summary(), val:`${$('totalWeight').textContent!=='—'?$('totalWeight').textContent+' kg':$('unitWeight').textContent+' kg/m'}`});
+  localStorage.setItem(HKEY, JSON.stringify(h.slice(0,50)));
+  renderHist(); toast('履歴に保存しました');
+};
+$('clearHist').onclick = ()=>{ localStorage.removeItem(HKEY); renderHist(); toast('履歴を消去しました'); };
+
+let toastTimer;
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+renderDims(); renderHist();
+</script>
+</body>
+</html>
