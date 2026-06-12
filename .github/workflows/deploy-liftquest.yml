@@ -2,7 +2,7 @@ name: Deploy liftquest to GitHub Pages
 
 on:
   push:
-    branches: [ "claude/elevator-inspector-game-gfrmlm" ]
+    branches: [ "main", "claude/elevator-inspector-game-gfrmlm" ]
   workflow_dispatch:
 
 permissions:
