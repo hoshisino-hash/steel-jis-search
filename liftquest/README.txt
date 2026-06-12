@@ -40,7 +40,7 @@
 ```
 liftquest/
 ├── index.html              アプリ本体(HTML+CSS+JS)
-├── data.js                 問題バンク(116問+自動生成)— 改正時はここだけ差替え
+├── data.js                 問題バンク(154問+自動生成)— 改正時はここだけ差替え
 ├── manifest.json           PWA設定
 ├── service-worker.js       オフライン動作(data.jsはnetwork-firstで即時更新)
 ├── icon-192.png / icon-512.png / icon-maskable-512.png / apple-touch-icon.png

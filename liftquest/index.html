@@ -621,6 +621,14 @@ const GENERATORS = [
     return { cat:"elec", gen:true, q:`${V}V の電源に ${R}Ω の抵抗を接続した。消費電力は?`,
       c, a, ex:`I=V/R=${fmt(I)}A、P=V×I=${V}×${fmt(I)}=${fmt(P)}W(またはP=V²/R)。`, ref:"電力の公式" };
   },
+  function freqFromSpeed(){ // f = P・N / 120 (無負荷回転数≒同期速度)
+    const f=pick([50,60]), P=pick([4,6,8]); const N=120*f/P;
+    const others=[f===50?60:50, Math.round(f/2), f*2];
+    const {c,a} = numChoices(f,others,"Hz");
+    return { cat:"elec", gen:true,
+      q:`${P}極の三相誘導電動機の無負荷回転数がほぼ ${fmt(N)}min⁻¹ だった。電源周波数は?`,
+      c, a, ex:`無負荷回転数≒同期速度なので f = P×N/120 = ${P}×${fmt(N)}/120 = ${f}Hz。N=120f/Pの逆算パターン。`, ref:"同期速度の公式(逆算)" };
+  },
   function lineVoltage(){ // 線間 = √3 × 相
     const E=pick([100,115,200,231]);
     const V = Math.round(E*1.732);
