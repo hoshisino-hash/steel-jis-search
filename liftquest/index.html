@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#4527a0">
+<meta name="description" content="昇降機等検査員 修了考査対策ゲーム。数値即答・判定シミュレーター・計算ドリル・30問模試・弱点復習でレベルアップ!法令・告示の数値に基づく自作問題バンク収録。オフライン対応PWA。">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="検査員クエスト">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<title>昇降機検査員クエスト</title>
+<style>
+  :root {
+    --bg1: #5e35b1;
+    --bg2: #3949ab;
+    --card: #ffffff;
+    --ink: #2d2a4a;
+    --ink-dim: #6b6890;
+    --accent: #ff8c42;
+    --accent2: #ffc107;
+    --good: #2ecc71;
+    --bad: #e74c3c;
+    --warn: #f39c12;
+    --pop: #ff5da2;
+    --radius: 20px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  html, body {
+    background: linear-gradient(160deg, var(--bg1), var(--bg2) 60%, #1e88e5);
+    background-attachment: fixed;
+    color: var(--ink);
+    font-family: "Hiragino Maru Gothic ProN", "BIZ UDPGothic", "Yu Gothic", "Meiryo", sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    overscroll-behavior-y: contain;
+  }
+
+  body { padding: 0 0 40px; }
+
+  .wrap { max-width: 560px; margin: 0 auto; padding: 0 14px; }
+
+  /* ===== header ===== */
+  header {
+    padding: 16px 0 8px;
+    text-align: center;
+    color: #fff;
+  }
+  .app-title {
+    font-size: 22px; font-weight: 800; letter-spacing: .04em;
+    text-shadow: 0 2px 0 rgba(0,0,0,.25);
+  }
+  .app-sub { font-size: 11px; opacity:.85; letter-spacing:.15em; }
+
+  /* ===== player bar ===== */
+  .player-bar {
+    background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin: 10px 0 14px;
+    color: #fff;
+    backdrop-filter: blur(4px);
+  }
+  .player-row { display:flex; align-items:center; gap:10px; }
+  .mascot { font-size: 34px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.3)); }
+  .player-info { flex:1; }
+  .player-title { font-size: 14px; font-weight: 700; }
+  .player-lv { font-size: 12px; opacity:.9; }
+  .xp-track { background: rgba(0,0,0,.3); border-radius: 99px; height: 12px; margin-top:6px; overflow:hidden; }
+  .xp-fill {
+    height:100%; border-radius:99px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width .6s cubic-bezier(.2,.8,.3,1.2);
+  }
+  .sound-btn {
+    background: rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.3);
+    color:#fff; border-radius: 12px; width:42px; height:42px; font-size:19px; cursor:pointer;
+  }
+
+  /* ===== screens ===== */
+  .screen { display:none; animation: rise .3s ease; }
+  .screen.active { display:block; }
+  @keyframes rise { from { opacity:0; transform: translateY(14px);} to {opacity:1; transform:none;} }
+
+  /* ===== mode cards ===== */
+  .mode-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .mode-card {
+    background: var(--card);
+    border: none; border-radius: var(--radius);
+    padding: 16px 12px 14px;
+    text-align: center; cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,.22);
+    transition: transform .1s ease;
+    font-family: inherit;
+  }
+  .mode-card:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,.22); }
+  .mode-card.wide { grid-column: 1 / -1; background: linear-gradient(135deg,#fff8e1,#ffe0b2); }
+  .mode-icon { font-size: 32px; display:block; }
+  .mode-name { font-weight: 800; font-size: 15px; margin-top:4px; }
+  .mode-desc { font-size: 11px; color: var(--ink-dim); margin-top:2px; line-height:1.4; }
+
+  .home-links { display:flex; gap:10px; margin-top:12px; }
+  .home-links button {
+    flex:1; background: rgba(255,255,255,.16); color:#fff;
+    border:1px solid rgba(255,255,255,.3); border-radius:14px;
+    padding:10px 4px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer;
+  }
+  .home-note { color:rgba(255,255,255,.75); font-size:10.5px; text-align:center; margin-top:14px; line-height:1.6; }
+  .home-note a { color:#ffe082; }
+
+  /* ===== quiz ===== */
+  .quiz-top { display:flex; align-items:center; gap:10px; color:#fff; margin-bottom:10px; }
+  .quit-btn {
+    background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.3); color:#fff;
+    border-radius:10px; padding:6px 12px; font-family:inherit; font-size:13px; cursor:pointer;
+  }
+  .quiz-progress { flex:1; }
+  .prog-track { background:rgba(0,0,0,.3); height:10px; border-radius:99px; overflow:hidden; }
+  .prog-fill { height:100%; background:linear-gradient(90deg,var(--pop),var(--accent2)); border-radius:99px; transition: width .3s; }
+  .prog-label { font-size:11px; text-align:right; opacity:.9; margin-top:2px; }
+  .combo-chip {
+    background: var(--pop); color:#fff; border-radius:99px;
+    font-size:12px; font-weight:800; padding:4px 10px;
+    box-shadow:0 2px 0 rgba(0,0,0,.25);
+    animation: popin .25s ease;
+  }
+  @keyframes popin { from{transform:scale(.4);} to{transform:scale(1);} }
+
+  .timer-track { background:rgba(0,0,0,.3); height:6px; border-radius:99px; overflow:hidden; margin-bottom:10px; }
+  .timer-fill { height:100%; background: var(--good); border-radius:99px; }
+  .timer-fill.hurry { background: var(--bad); }
+
+  .q-card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 18px 16px; box-shadow: 0 6px 0 rgba(0,0,0,.22);
+  }
+  .q-cat {
+    display:inline-block; font-size:11px; font-weight:800; color:#fff;
+    border-radius:99px; padding:3px 12px; margin-bottom:10px;
+  }
+  .q-text { font-size: 16.5px; font-weight: 700; line-height:1.7; }
+  .q-card.shake { animation: shake .35s ease; }
+  @keyframes shake { 0%,100%{transform:none;} 25%{transform:translateX(-7px);} 50%{transform:translateX(7px);} 75%{transform:translateX(-4px);} }
+
+  .choices { margin-top:14px; display:flex; flex-direction:column; gap:10px; }
+  .choice {
+    background:#f4f2ff; border:2px solid #e2ddf7; border-radius:14px;
+    padding:12px 14px; font-family:inherit; font-size:14.5px; font-weight:600;
+    text-align:left; cursor:pointer; color:var(--ink); line-height:1.5;
+    display:flex; gap:10px; align-items:center;
+    transition: transform .08s;
+  }
+  .choice:active { transform: scale(.985); }
+  .choice .mark { font-weight:800; color:var(--ink-dim); flex-shrink:0; }
+  .choice.correct { background:#e8f9ef; border-color:var(--good); }
+  .choice.wrong { background:#fdeceb; border-color:var(--bad); }
+  .choice.dim { opacity:.45; }
+  .choice:disabled { cursor:default; }
+
+  .feedback { margin-top:14px; display:none; }
+  .feedback.show { display:block; animation: rise .25s ease; }
+  .fb-banner { font-size:18px; font-weight:800; margin-bottom:6px; }
+  .fb-banner.ok { color: var(--good); }
+  .fb-banner.ng { color: var(--bad); }
+  .fb-ex {
+    background:#fffbe8; border-left:4px solid var(--accent2);
+    border-radius:8px; padding:10px 12px; font-size:13.5px; line-height:1.7;
+  }
+  .fb-ref { font-size:11.5px; color:var(--ink-dim); margin-top:6px; }
+  .next-btn {
+    width:100%; margin-top:14px;
+    background: linear-gradient(135deg,var(--accent),#ff6f00); color:#fff;
+    border:none; border-radius:16px; padding:14px; font-family:inherit;
+    font-size:16px; font-weight:800; cursor:pointer;
+    box-shadow:0 4px 0 #c55500;
+  }
+  .next-btn:active { transform:translateY(3px); box-shadow:0 1px 0 #c55500; }
+
+  /* ===== result ===== */
+  .result-card {
+    background:var(--card); border-radius:var(--radius); padding:24px 18px;
+    text-align:center; box-shadow:0 6px 0 rgba(0,0,0,.22);
+  }
+  .result-emoji { font-size:56px; }
+  .result-title { font-size:24px; font-weight:800; margin-top:6px; }
+  .result-score { font-size:42px; font-weight:800; color:var(--accent); }
+  .result-sub { color:var(--ink-dim); font-size:13px; }
+  .result-pass { font-size:20px; font-weight:800; padding:8px 0; border-radius:12px; margin:12px 0; }
+  .result-pass.ok { background:#e8f9ef; color:var(--good); }
+  .result-pass.ng { background:#fdeceb; color:var(--bad); }
+  .gain-chip { display:inline-block; background:#f3e5f5; color:#7b1fa2; font-weight:800; border-radius:99px; padding:4px 14px; font-size:13px; margin-top:8px; }
+  .cat-bars { text-align:left; margin-top:16px; }
+  .cat-bar-row { margin-bottom:8px; }
+  .cat-bar-label { display:flex; justify-content:space-between; font-size:12px; font-weight:700; }
+  .cat-bar-track { background:#eee9fb; height:10px; border-radius:99px; overflow:hidden; }
+  .cat-bar-fill { height:100%; border-radius:99px; transition:width .8s ease; }
+  .review-list { text-align:left; margin-top:16px; }
+  .review-item { background:#faf8ff; border-radius:12px; padding:10px 12px; margin-bottom:8px; font-size:12.5px; }
+  .review-item .rq { font-weight:700; }
+  .review-item .ra { color:var(--good); font-weight:700; }
+  .review-item .rx { color:var(--ink-dim); margin-top:2px; }
+  .btn-row { display:flex; gap:10px; margin-top:16px; }
+  .btn-row button {
+    flex:1; border:none; border-radius:14px; padding:13px; font-family:inherit;
+    font-size:14.5px; font-weight:800; cursor:pointer;
+  }
+  .btn-main { background:linear-gradient(135deg,var(--accent),#ff6f00); color:#fff; box-shadow:0 4px 0 #c55500; }
+  .btn-sub { background:#ece9f8; color:var(--ink); box-shadow:0 4px 0 #c9c3e2; }
+
+  /* ===== stats / badges ===== */
+  .panel {
+    background:var(--card); border-radius:var(--radius); padding:18px 16px;
+    box-shadow:0 6px 0 rgba(0,0,0,.22); margin-bottom:14px;
+  }
+  .panel h2 { font-size:16px; font-weight:800; margin-bottom:10px; }
+  .stat-line { display:flex; justify-content:space-between; font-size:13.5px; padding:5px 0; border-bottom:1px dashed #e8e4f6; }
+  .badge-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .badge-cell { text-align:center; background:#faf8ff; border-radius:14px; padding:10px 4px; }
+  .badge-cell.locked { filter:grayscale(1); opacity:.4; }
+  .badge-ic { font-size:28px; }
+  .badge-nm { font-size:10.5px; font-weight:700; margin-top:2px; line-height:1.3; }
+  .mock-his { font-size:12.5px; }
+  .mock-his li { list-style:none; padding:4px 0; border-bottom:1px dashed #e8e4f6; display:flex; justify-content:space-between; }
+
+  /* ===== category select ===== */
+  .cat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .cat-card {
+    border:none; border-radius:16px; padding:14px 8px; color:#fff;
+    font-family:inherit; font-weight:800; font-size:13.5px; cursor:pointer;
+    box-shadow:0 4px 0 rgba(0,0,0,.25); text-align:center;
+  }
+  .cat-card:active { transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.25); }
+  .cat-card .ci { font-size:24px; display:block; }
+  .cat-card .acc { display:block; font-size:10.5px; font-weight:600; opacity:.9; margin-top:2px; }
+
+  /* ===== floating xp / levelup ===== */
+  .xp-float {
+    position:fixed; pointer-events:none; font-weight:800; color:var(--accent2);
+    text-shadow:0 1px 2px rgba(0,0,0,.5); font-size:18px; z-index:999;
+    animation: floatup 1s ease forwards;
+  }
+  @keyframes floatup { from{opacity:1; transform:translateY(0);} to{opacity:0; transform:translateY(-60px);} }
+
+  .levelup-overlay {
+    position:fixed; inset:0; background:rgba(30,10,70,.78); z-index:1000;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    color:#fff; text-align:center; animation: rise .3s ease;
+  }
+  .levelup-overlay .lv-big { font-size:60px; animation: spinpop .7s ease; }
+  @keyframes spinpop { from{transform:scale(0) rotate(-180deg);} to{transform:scale(1) rotate(0);} }
+  .levelup-overlay h3 { font-size:26px; margin:8px 0 2px; }
+  .levelup-overlay p { opacity:.9; }
+  .levelup-overlay button {
+    margin-top:18px; background:var(--accent2); color:#5d4037; border:none;
+    border-radius:14px; padding:12px 36px; font-family:inherit; font-size:16px; font-weight:800; cursor:pointer;
+  }
+
+  .confetti-bit { position:fixed; width:10px; height:10px; z-index:998; pointer-events:none; border-radius:2px; }
+
+  @media (min-width:600px){ html,body{font-size:17px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="app-title">🛗 昇降機検査員クエスト</div>
+    <div class="app-sub">LIFT INSPECTOR QUEST — 修了考査対策</div>
+  </header>
+
+  <div class="player-bar">
+    <div class="player-row">
+      <span class="mascot" id="mascot">🛗</span>
+      <div class="player-info">
+        <div class="player-title" id="playerTitle">見習い検査員</div>
+        <div class="player-lv"><span id="playerLv">Lv.1</span> ・ <span id="playerXp">0 XP</span></div>
+        <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+      </div>
+      <button class="sound-btn" id="soundBtn" aria-label="サウンド切替">🔊</button>
+    </div>
+  </div>
+
+  <!-- ============ HOME ============ -->
+  <section class="screen active" id="scr-home">
+    <div class="mode-grid">
+      <button class="mode-card wide" data-mode="mock">
+        <span class="mode-icon">📝</span>
+        <span class="mode-name">模試モード(30問)</span>
+        <span class="mode-desc">本番と同じ配分・20問で合格!R7考査の出題構成を再現</span>
+      </button>
+      <button class="mode-card" data-mode="flash">
+        <span class="mode-icon">⚡</span>
+        <span class="mode-name">数値即答</span>
+        <span class="mode-desc">頻出数値を15秒で即答<br>スピードボーナスあり</span>
+      </button>
+      <button class="mode-card" data-mode="judge">
+        <span class="mode-icon">🔍</span>
+        <span class="mode-name">判定シミュ</span>
+        <span class="mode-desc">要是正?要重点点検?<br>検査の最頻出形式</span>
+      </button>
+      <button class="mode-card" data-mode="calc">
+        <span class="mode-icon">🧮</span>
+        <span class="mode-name">計算ドリル</span>
+        <span class="mode-desc">フックの法則・同期速度<br>無限に自動生成</span>
+      </button>
+      <button class="mode-card" data-mode="catselect">
+        <span class="mode-icon">📚</span>
+        <span class="mode-name">分野別特訓</span>
+        <span class="mode-desc">8分野から選んで集中学習</span>
+      </button>
+      <button class="mode-card wide" data-mode="weak">
+        <span class="mode-icon">🎯</span>
+        <span class="mode-name">弱点復習(SRS)</span>
+        <span class="mode-desc">間違えた問題を優先して再出題。苦手をつぶして合格へ</span>
+      </button>
+    </div>
+    <div class="home-links">
+      <button id="btnStats">📊 成績</button>
+      <button id="btnBadges">🏅 バッジ</button>
+    </div>
+    <p class="home-note">
+      問題は建築基準法・施行令・国交省告示(令和7年7月改正対応)等の数値・規定に基づく自作問題です。<br>
+      本番は講習テキスト持込可・30問中20問正解で合格。
+    </p>
+  </section>
+
+  <!-- ============ CATEGORY SELECT ============ -->
+  <section class="screen" id="scr-cat">
+    <div class="quiz-top"><button class="quit-btn" data-go="home">← もどる</button>
+      <div style="color:#fff;font-weight:800;">分野をえらぶ</div></div>
+    <div class="cat-grid" id="catGrid"></div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="screen" id="scr-quiz">
+    <div class="quiz-top">
+      <button class="quit-btn" id="quitBtn">× やめる</button>
+      <div class="quiz-progress">
+        <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+        <div class="prog-label" id="progLabel"></div>
+      </div>
+      <span class="combo-chip" id="comboChip" style="display:none"></span>
+    </div>
+    <div class="timer-track" id="timerTrack" style="display:none"><div class="timer-fill" id="timerFill"></div></div>
+    <div class="q-card" id="qCard">
+      <span class="q-cat" id="qCat"></span>
+      <div class="q-text" id="qText"></div>
+      <div class="choices" id="choices"></div>
+      <div class="feedback" id="feedback">
+        <div class="fb-banner" id="fbBanner"></div>
+        <div class="fb-ex" id="fbEx"></div>
+        <div class="fb-ref" id="fbRef"></div>
+        <button class="next-btn" id="nextBtn">つぎへ ▶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESULT ============ -->
+  <section class="screen" id="scr-result">
+    <div class="result-card">
+      <div class="result-emoji" id="resEmoji">🎉</div>
+      <div class="result-title" id="resTitle">けっか</div>
+      <div class="result-score"><span id="resScore">0</span><span style="font-size:20px;color:var(--ink-dim)"> / <span id="resTotal">10</span></span></div>
+      <div class="result-pass" id="resPass" style="display:none"></div>
+      <div class="result-sub" id="resSub"></div>
+      <div class="gain-chip" id="resGain">+0 XP</div>
+      <div class="cat-bars" id="resCatBars"></div>
+      <div class="review-list" id="resReview"></div>
+      <div class="btn-row">
+        <button class="btn-sub" data-go="home">ホームへ</button>
+        <button class="btn-main" id="retryBtn">もう一回!</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STATS ============ -->
+  <section class="screen" id="scr-stats">
+    <div class="quiz-top"><button class="quit-btn" data-go="home">← もどる</button>
+      <div style="color:#fff;font-weight:800;">成績ノート</div></div>
+    <div class="panel">
+      <h2>📊 ぜんぶの記録</h2>
+      <div id="statTotals"></div>
+    </div>
+    <div class="panel">
+      <h2>📚 分野別の正答率</h2>
+      <div class="cat-bars" id="statCatBars"></div>
+    </div>
+    <div class="panel">
+      <h2>📝 模試の歴史</h2>
+      <ul class="mock-his" id="mockHistory"></ul>
+    </div>
+    <div class="panel">
+      <h2>⚙️ データ</h2>
+      <div class="btn-row" style="margin-top:4px;">
+        <button class="btn-sub" id="resetBtn">記録をリセット</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BADGES ============ -->
+  <section class="screen" id="scr-badges">
+    <div class="quiz-top"><button class="quit-btn" data-go="home">← もどる</button>
+      <div style="color:#fff;font-weight:800;">バッジコレクション</div></div>
+    <div class="panel">
+      <div class="badge-grid" id="badgeGrid"></div>
+    </div>
+  </section>
+
+</div>
+
+<script src="data.js"></script>
+<script>
+"use strict";
+
+/* =====================================================
+   セーブデータ
+===================================================== */
+const SAVE_KEY = "liftquest_save_v1";
+const defaultSave = () => ({
+  xp: 0, sound: true,
+  perQ: {},                       // id -> {seen, ok, ng}
+  perCat: {},                     // cat -> {ok, ng}
+  badges: [],
+  mocks: [],                      // {date, score, pass}
+  counters: { answered:0, correct:0, bestCombo:0, calcStreak:0 }
+});
+let S = loadSave();
+function loadSave(){
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (raw) return Object.assign(defaultSave(), JSON.parse(raw));
+  } catch(e){}
+  return defaultSave();
+}
+function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
+
+/* =====================================================
+   レベル・称号
+===================================================== */
+const TITLES = [
+  [1,"見習い検査員"],[3,"点検アシスタント"],[5,"検査員候補生"],[8,"昇降機等検査員"],
+  [12,"ベテラン検査員"],[16,"主任検査員"],[20,"検査マイスター"],[25,"伝説の検査員"]
+];
+function xpForLevel(lv){ return 40 * (lv-1) * lv; }   // 累計XPしきい値
+function levelOf(xp){ let lv=1; while(xpForLevel(lv+1)<=xp) lv++; return lv; }
+function titleOf(lv){ let t=TITLES[0][1]; for(const [l,n] of TITLES) if(lv>=l) t=n; return t; }
+
+function renderPlayer(){
+  const lv = levelOf(S.xp);
+  const cur = xpForLevel(lv), next = xpForLevel(lv+1);
+  const pct = Math.min(100, Math.round((S.xp-cur)/(next-cur)*100));
+  document.getElementById("playerLv").textContent = "Lv." + lv;
+  document.getElementById("playerXp").textContent = S.xp + " XP";
+  document.getElementById("playerTitle").textContent = titleOf(lv);
+  document.getElementById("xpFill").style.width = pct + "%";
+  document.getElementById("soundBtn").textContent = S.sound ? "🔊" : "🔇";
+}
+
+/* =====================================================
+   サウンド (WebAudio)
+===================================================== */
+let actx = null;
+function beep(freqs, dur, type, gain){
+  if (!S.sound) return;
+  try {
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    freqs.forEach((f,i)=>{
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = type||"triangle"; o.frequency.value = f;
+      g.gain.value = 0;
+      o.connect(g); g.connect(actx.destination);
+      const t = actx.currentTime + i*dur;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(gain||0.18, t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, t+dur);
+      o.start(t); o.stop(t+dur+0.05);
+    });
+  } catch(e){}
+}
+const sndOK   = ()=>beep([660,880],0.12);
+const sndNG   = ()=>beep([220,160],0.18,"sawtooth",0.10);
+const sndTap  = ()=>beep([520],0.05,"sine",0.06);
+const sndFanfare = ()=>beep([523,659,784,1047],0.16);
+const sndLevel   = ()=>beep([392,523,659,784,1047],0.14);
+
+/* =====================================================
+   紙吹雪
+===================================================== */
+function confetti(n){
+  const colors = ["#ffc107","#ff5da2","#2ecc71","#42a5f5","#ff8c42","#ab47bc"];
+  for (let i=0;i<(n||26);i++){
+    const b = document.createElement("div");
+    b.className = "confetti-bit";
+    b.style.background = colors[i%colors.length];
+    b.style.left = (10+Math.random()*80) + "vw";
+    b.style.top = "-12px";
+    const fall = 60+Math.random()*40, dur = 1.1+Math.random()*0.9;
+    b.animate(
+      [{transform:"translateY(0) rotate(0)",opacity:1},
+       {transform:`translateY(${fall}vh) rotate(${360+Math.random()*360}deg)`,opacity:0.2}],
+      {duration:dur*1000, easing:"ease-in"});
+    document.body.appendChild(b);
+    setTimeout(()=>b.remove(), dur*1000);
+  }
+}
+function floatXp(text, x, y){
+  const el = document.createElement("div");
+  el.className = "xp-float"; el.textContent = text;
+  el.style.left = (x||window.innerWidth/2) + "px";
+  el.style.top = (y||window.innerHeight/2) + "px";
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1000);
+}
+
+/* =====================================================
+   バッジ
+===================================================== */
+const BADGES = [
+  { id:"first",   ic:"🔰", nm:"はじめての検査",   test:s=>s.counters.answered>=1 },
+  { id:"combo5",  ic:"🔥", nm:"コンボ×5",        test:s=>s.counters.bestCombo>=5 },
+  { id:"combo10", ic:"💥", nm:"コンボ×10",       test:s=>s.counters.bestCombo>=10 },
+  { id:"ans100",  ic:"💪", nm:"100問チャレンジ", test:s=>s.counters.answered>=100 },
+  { id:"ans500",  ic:"🦾", nm:"500問の鉄人",     test:s=>s.counters.answered>=500 },
+  { id:"mock1",   ic:"📝", nm:"模試デビュー",     test:s=>s.mocks.length>=1 },
+  { id:"mockpass",ic:"🎓", nm:"模試合格!",        test:s=>s.mocks.some(m=>m.pass) },
+  { id:"mockfull",ic:"👑", nm:"模試パーフェクト", test:s=>s.mocks.some(m=>m.score>=30) },
+  { id:"calc10",  ic:"🧮", nm:"計算マスター",     test:s=>s.counters.calcStreak>=10 },
+  { id:"lv10",    ic:"🚀", nm:"Lv.10とうたつ",    test:s=>levelOf(s.xp)>=10 },
+  { id:"allcat",  ic:"🌈", nm:"8分野せいは",      test:s=>Object.keys(QUIZ_DATA.categories).every(c=>(s.perCat[c]&&(s.perCat[c].ok+s.perCat[c].ng)>=10)) },
+  { id:"sharp",   ic:"🎯", nm:"正答率80%",        test:s=>s.counters.answered>=50 && s.counters.correct/s.counters.answered>=0.8 }
+];
+function checkBadges(){
+  const fresh = [];
+  for (const b of BADGES){
+    if (!S.badges.includes(b.id) && b.test(S)){ S.badges.push(b.id); fresh.push(b); }
+  }
+  if (fresh.length){
+    save();
+    sndFanfare(); confetti(40);
+    fresh.forEach((b,i)=>setTimeout(()=>floatXp(b.ic+" "+b.nm+" GET!", window.innerWidth/2-70, window.innerHeight*0.3+i*30),i*350));
+  }
+}
+
+/* =====================================================
+   計算ドリル ジェネレーター(無限生成)
+===================================================== */
+const pick = a => a[Math.floor(Math.random()*a.length)];
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function numChoices(ans, alts, unit){
+  const set = [...new Set([ans, ...alts])].slice(0,4);
+  let k = 2;
+  while (set.length<4){ const v=ans*k; if(!set.includes(v)) set.push(v); k*=5; }
+  const arr = shuffle(set);
+  return { c: arr.map(v=>fmt(v)+(unit?" "+unit:"")), a: arr.indexOf(ans) };
+}
+function fmt(v){
+  const r = Math.round(v*100)/100;
+  return r.toLocaleString("ja-JP");
+}
+
+const GENERATORS = [
+  function hookeForce(){ // F = E・A・ΔL / L
+    const E=205000, A=pick([100,200,400,500]), L=pick([1000,2000,2500]), d=pick([0.5,1,2]);
+    const F = E*A*d/L; // N
+    const {c,a} = numChoices(F,[F*2,F/2,F*10],"N");
+    return { cat:"mech", gen:true,
+      q:`鋼棒(ヤング係数 E=2.05×10⁵ N/mm²、断面積 A=${A}mm²、長さ L=${fmt(L)}mm)が ΔL=${d}mm 伸びた。作用している引張荷重 F は?(F=E・A・ΔL/L)`,
+      c, a, ex:`F = E×A×ΔL/L = 205,000×${A}×${d}/${fmt(L)} = ${fmt(F)}N。単位は 1MPa=1N/mm² で揃えるのがコツ。`, ref:"フックの法則" };
+  },
+  function hookeStretch(){ // ΔL = F・L / (E・A)
+    const E=205000, A=pick([100,200,500]), L=pick([1025,2050,4100]), F=pick([20500,41000,82000]);
+    const d = F*L/(E*A);
+    const {c,a} = numChoices(d,[d*2,d/2,d*10],"mm");
+    return { cat:"mech", gen:true,
+      q:`鋼棒(E=2.05×10⁵ N/mm²、断面積 ${A}mm²、長さ ${fmt(L)}mm)に引張荷重 ${fmt(F)}N が作用したときの伸び ΔL は?`,
+      c, a, ex:`ΔL = F×L/(E×A) = ${fmt(F)}×${fmt(L)}/(205,000×${A}) = ${fmt(d)}mm。`, ref:"フックの法則" };
+  },
+  function stress(){ // σ = F/A
+    const A=pick([50,100,200,250]), s=pick([80,120,160,200]);
+    const F = s*A;
+    const {c,a} = numChoices(s,[s*2,s/2,s*10],"N/mm²");
+    return { cat:"mech", gen:true,
+      q:`断面積 ${A}mm² の部材に引張荷重 ${fmt(F)}N が作用している。発生する垂直応力は?`,
+      c, a, ex:`σ = F/A = ${fmt(F)}/${A} = ${s}N/mm²(=${s}MPa)。`, ref:"応力の定義" };
+  },
+  function syncSpeed(){ // N = 120f/P
+    const f=pick([50,60]), P=pick([4,6,8]);
+    const N = 120*f/P;
+    const others = [120*f/4,120*f/6,120*f/8,120*(f===50?60:50)/P].filter(v=>v!==N);
+    const {c,a} = numChoices(N,others,"min⁻¹");
+    return { cat:"elec", gen:true,
+      q:`周波数 ${f}Hz、${P}極の三相誘導電動機の同期速度は?(N=120f/P)`,
+      c, a, ex:`N = 120×${f}/${P} = ${fmt(N)}min⁻¹。無負荷回転数はほぼこの値になる。`, ref:"同期速度の公式" };
+  },
+  function slipSpeed(){ // N = Ns(1-s)
+    const f=pick([50,60]), P=pick([4,6]); const Ns=120*f/P; const s=pick([2,4,5]);
+    const N = Ns*(1-s/100);
+    const {c,a} = numChoices(N,[Ns,Ns*(1+s/100),Ns*(1-s/10)],"min⁻¹");
+    return { cat:"elec", gen:true,
+      q:`同期速度 ${fmt(Ns)}min⁻¹(${f}Hz・${P}極)の誘導電動機が滑り ${s}% で運転中。回転速度は?`,
+      c, a, ex:`N = Ns×(1−s) = ${fmt(Ns)}×(1−0.0${s}) = ${fmt(N)}min⁻¹。滑りの分だけ同期速度より遅く回る。`, ref:"誘導電動機の滑り" };
+  },
+  function ohm(){ // I = V/R, P=VI
+    const V=pick([100,200]), R=pick([10,20,25,50]);
+    const I=V/R, P=V*I;
+    if (Math.random()<0.5){
+      const {c,a} = numChoices(I,[I*2,I/2,V*R/100],"A");
+      return { cat:"elec", gen:true, q:`${V}V の電源に ${R}Ω の抵抗を接続した。流れる電流は?`,
+        c, a, ex:`I = V/R = ${V}/${R} = ${fmt(I)}A(オームの法則)。`, ref:"オームの法則" };
+    }
+    const {c,a} = numChoices(P,[P*2,P/2,P*10],"W");
+    return { cat:"elec", gen:true, q:`${V}V の電源に ${R}Ω の抵抗を接続した。消費電力は?`,
+      c, a, ex:`I=V/R=${fmt(I)}A、P=V×I=${V}×${fmt(I)}=${fmt(P)}W(またはP=V²/R)。`, ref:"電力の公式" };
+  },
+  function freqFromSpeed(){ // f = P・N / 120 (無負荷回転数≒同期速度)
+    const f=pick([50,60]), P=pick([4,6,8]); const N=120*f/P;
+    const others=[f===50?60:50, Math.round(f/2), f*2];
+    const {c,a} = numChoices(f,others,"Hz");
+    return { cat:"elec", gen:true,
+      q:`${P}極の三相誘導電動機の無負荷回転数がほぼ ${fmt(N)}min⁻¹ だった。電源周波数は?`,
+      c, a, ex:`無負荷回転数≒同期速度なので f = P×N/120 = ${P}×${fmt(N)}/120 = ${f}Hz。N=120f/Pの逆算パターン。`, ref:"同期速度の公式(逆算)" };
+  },
+  function lineVoltage(){ // 線間 = √3 × 相
+    const E=pick([100,115,200,231]);
+    const V = Math.round(E*1.732);
+    const {c,a} = numChoices(V,[E,Math.round(E*3),Math.round(E/1.732)],"V");
+    return { cat:"elec", gen:true,
+      q:`星形(Y)結線の三相交流で相電圧が ${E}V のとき、線間電圧はおよそ?(√3≒1.73)`,
+      c, a, ex:`線間電圧 = √3×相電圧 = 1.73×${E} ≒ ${fmt(V)}V。Y結線では電流は線・相で等しい。`, ref:"三相交流(Y結線)" };
+  },
+  function rms(){ // 実効値 = 最大値/√2
+    const Vr=pick([100,200,400]);
+    const Vm=Math.round(Vr*1.414);
+    const {c,a} = numChoices(Vr,[Vm,Math.round(Vm/2),Math.round(Vm*1.414)],"V");
+    return { cat:"elec", gen:true,
+      q:`正弦波交流の最大値が ${Vm}V のとき、実効値はおよそ?(√2≒1.41)`,
+      c, a, ex:`実効値 = 最大値/√2 = ${Vm}/1.41 ≒ ${Vr}V。交流の電圧表示は実効値。`, ref:"実効値" };
+  },
+  function beamMoment(){ // M = wL²/8
+    const w=pick([2,4,8]), L=pick([4,6,8]); // kN/m, m
+    const M = w*L*L/8;
+    const {c,a} = numChoices(M,[w*L*L/4,w*L*L/2,w*L/2],"kN・m");
+    return { cat:"mech", gen:true,
+      q:`スパン ${L}m の両端支持はりに等分布荷重 w=${w}kN/m が作用する。中央の最大曲げモーメントは?(M=wL²/8)`,
+      c, a, ex:`M = wL²/8 = ${w}×${L}²/8 = ${fmt(M)}kN・m。中央ではせん断力が0になることもセットで覚える。`, ref:"等分布荷重のはり" };
+  }
+];
+function genCalc(catFilter){
+  const pool = catFilter ? GENERATORS.filter(g=>g().cat===catFilter) : GENERATORS;
+  const q = pick(pool)();
+  q.type = "mc";
+  return q;
+}
+
+/* =====================================================
+   出題セット構築
+===================================================== */
+const Q = QUIZ_DATA.questions;
+const CATS = QUIZ_DATA.categories;
+
+function weightOf(id){
+  const r = S.perQ[id];
+  if (!r) return 3;                      // 未出題は高優先
+  return Math.max(0.3, 1 + r.ng*2.5 - r.ok*0.7);
+}
+function weightedSample(pool, n){
+  const out = [], items = pool.map(q=>({q, w:weightOf(q.id)}));
+  while (out.length<n && items.length){
+    let total = items.reduce((s,x)=>s+x.w,0), r = Math.random()*total;
+    let idx = 0;
+    for (let i=0;i<items.length;i++){ r-=items[i].w; if(r<=0){ idx=i; break; } }
+    out.push(items[idx].q); items.splice(idx,1);
+  }
+  return out;
+}
+
+function buildSet(mode, opt){
+  switch(mode){
+    case "flash":
+      return weightedSample(Q.filter(q=>q.flash), 10);
+    case "judge":
+      return weightedSample(Q.filter(q=>q.type==="judge"), 10);
+    case "calc":
+      return Array.from({length:6},()=>genCalc());
+    case "cat":
+      return weightedSample(Q.filter(q=>q.cat===opt), Math.min(10, Q.filter(q=>q.cat===opt).length));
+    case "weak": {
+      const wrongs = Q.filter(q=>S.perQ[q.id] && S.perQ[q.id].ng>0);
+      const base = wrongs.length>=4 ? wrongs : Q;
+      return weightedSample(base, 10);
+    }
+    case "mock": {
+      const plan = QUIZ_DATA.mockPlan, set = [];
+      for (const [cat,n] of Object.entries(plan)){
+        let need = n;
+        if (cat==="mech"||cat==="elec"){ set.push(genCalc(cat)); need--; } // 毎年の計算問題を再現
+        set.push(...weightedSample(Q.filter(q=>q.cat===cat), need));
+      }
+      return shuffle(set);
+    }
+  }
+  return [];
+}
+
+/* =====================================================
+   画面遷移
+===================================================== */
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById("scr-"+id).classList.add("active");
+  window.scrollTo(0,0);
+}
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{ sndTap(); show(b.dataset.go); }));
+
+/* =====================================================
+   クイズ進行
+===================================================== */
+const MODE_LABEL = { flash:"⚡数値即答", judge:"🔍判定シミュ", calc:"🧮計算ドリル", cat:"📚分野別特訓", weak:"🎯弱点復習", mock:"📝模試" };
+let G = null; // {mode, set, idx, correct, combo, answers[], timer, deadline}
+
+function startQuiz(mode, opt){
+  const set = buildSet(mode, opt);
+  if (!set.length) return;
+  G = { mode, set, idx:0, correct:0, combo:0, gained:0,
+        answers:[], opt, timerId:null };
+  show("quiz");
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q = G.set[G.idx];
+  const total = G.set.length;
+  document.getElementById("progFill").style.width = (G.idx/total*100)+"%";
+  document.getElementById("progLabel").textContent = `${MODE_LABEL[G.mode]}  第${G.idx+1}問 / ${total}`;
+  const comboChip = document.getElementById("comboChip");
+  if (G.combo>=2){ comboChip.style.display=""; comboChip.textContent="🔥"+G.combo+"コンボ"; }
+  else comboChip.style.display="none";
+
+  const cat = CATS[q.cat];
+  const qCat = document.getElementById("qCat");
+  qCat.textContent = cat.icon+" "+cat.name + (q.gen?" (自動生成)":"");
+  qCat.style.background = cat.color;
+  document.getElementById("qText").textContent = q.q;
+  document.getElementById("qCard").classList.remove("shake");
+  document.getElementById("feedback").classList.remove("show");
+
+  // 選択肢(judge型は順序固定、その他はシャッフル)
+  let order = q.c.map((_,i)=>i);
+  if (q.type!=="judge") order = shuffle(order);
+  const marks = ["①","②","③","④"];
+  const box = document.getElementById("choices");
+  box.innerHTML = "";
+  order.forEach((ci,i)=>{
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.innerHTML = `<span class="mark">${marks[i]}</span><span>${q.c[ci]}</span>`;
+    btn.addEventListener("click",()=>answer(ci,btn));
+    box.appendChild(btn);
+  });
+
+  // フラッシュモードのタイマー
+  clearTimer();
+  const tt = document.getElementById("timerTrack");
+  if (G.mode==="flash"){
+    tt.style.display="";
+    const fill = document.getElementById("timerFill");
+    const LIMIT = 15000;
+    G.tStart = Date.now();
+    fill.classList.remove("hurry"); fill.style.width="100%";
+    G.timerId = setInterval(()=>{
+      const left = LIMIT-(Date.now()-G.tStart);
+      fill.style.width = Math.max(0,left/LIMIT*100)+"%";
+      if (left<5000) fill.classList.add("hurry");
+      if (left<=0){ clearTimer(); answer(-1,null); } // 時間切れ
+    },100);
+  } else tt.style.display="none";
+}
+function clearTimer(){ if (G && G.timerId){ clearInterval(G.timerId); G.timerId=null; } }
+
+function answer(ci, btn){
+  clearTimer();
+  const q = G.set[G.idx];
+  const ok = ci===q.a;
+  const isMock = G.mode==="mock";
+
+  // ボタン状態
+  document.querySelectorAll("#choices .choice").forEach(b=>{
+    b.disabled = true;
+    const txt = b.querySelector("span:last-child").textContent;
+    if (txt===q.c[q.a]) b.classList.add("correct");
+    else if (b===btn && !ok) b.classList.add("wrong");
+    else b.classList.add("dim");
+  });
+
+  // 記録
+  G.answers.push({q, picked:ci, ok});
+  if (q.id){
+    const r = S.perQ[q.id] = S.perQ[q.id]||{seen:0,ok:0,ng:0};
+    r.seen++; ok?r.ok++:r.ng++;
+  }
+  const pc = S.perCat[q.cat] = S.perCat[q.cat]||{ok:0,ng:0};
+  ok?pc.ok++:pc.ng++;
+  S.counters.answered++;
+  if (ok){
+    S.counters.correct++;
+    G.correct++; G.combo++;
+    S.counters.bestCombo = Math.max(S.counters.bestCombo, G.combo);
+    if (G.mode==="calc") S.counters.calcStreak++;
+    // XP: 基本10 + コンボ + フラッシュ速度ボーナス
+    let xp = 10 + Math.min(10, G.combo*2);
+    if (G.mode==="flash"){
+      const sec = (Date.now()-G.tStart)/1000;
+      if (sec<5) xp += 8; else if (sec<10) xp += 4;
+    }
+    if (isMock) xp = 6; // 模試はまとめて評価
+    G.gained += xp;
+    const before = levelOf(S.xp);
+    S.xp += xp;
+    if (!isMock){
+      sndOK(); confetti(G.combo>=5?22:10);
+      if (btn){ const r=btn.getBoundingClientRect(); floatXp("+"+xp+" XP", r.right-70, r.top-8); }
+    }
+    if (levelOf(S.xp)>before) setTimeout(()=>levelUp(levelOf(S.xp)), isMock?0:700);
+  } else {
+    G.combo = 0;
+    if (G.mode==="calc") S.counters.calcStreak = 0;
+    if (!isMock){ sndNG(); document.getElementById("qCard").classList.add("shake"); if(navigator.vibrate)navigator.vibrate(80); }
+  }
+  save(); renderPlayer(); checkBadges();
+
+  if (isMock){ setTimeout(nextQuestion, 250); return; }
+
+  // 解説表示
+  const fb = document.getElementById("feedback");
+  const banner = document.getElementById("fbBanner");
+  banner.textContent = ok ? pick(["⭕ せいかい!","⭕ ナイス検査!","⭕ さすが!"]) : (ci===-1?"⏰ 時間切れ…":"❌ ざんねん…");
+  banner.className = "fb-banner " + (ok?"ok":"ng");
+  document.getElementById("fbEx").textContent = q.ex;
+  document.getElementById("fbRef").textContent = "📖 出典: " + q.ref;
+  fb.classList.add("show");
+  document.getElementById("nextBtn").textContent = (G.idx+1>=G.set.length)?"けっかを見る ▶":"つぎへ ▶";
+}
+
+function nextQuestion(){
+  G.idx++;
+  if (G.idx>=G.set.length) finishQuiz();
+  else renderQuestion();
+}
+document.getElementById("nextBtn").addEventListener("click",()=>{ sndTap(); nextQuestion(); });
+document.getElementById("quitBtn").addEventListener("click",()=>{
+  clearTimer();
+  if (G && G.answers.length && !confirm("ここでやめる?(ここまでの記録は保存されます)")) return;
+  show("home");
+});
+
+/* =====================================================
+   レベルアップ演出
+===================================================== */
+function levelUp(lv){
+  sndLevel(); confetti(50);
+  const ov = document.createElement("div");
+  ov.className = "levelup-overlay";
+  ov.innerHTML = `<div class="lv-big">🛗✨</div><h3>LEVEL UP! Lv.${lv}</h3>
+    <p>称号「${titleOf(lv)}」になった!</p><button>やったー!</button>`;
+  ov.querySelector("button").addEventListener("click",()=>ov.remove());
+  document.body.appendChild(ov);
+}
+
+/* =====================================================
+   結果画面
+===================================================== */
+function finishQuiz(){
+  clearTimer();
+  const total = G.set.length, score = G.correct;
+  const isMock = G.mode==="mock";
+  show("result");
+
+  const rate = score/total;
+  document.getElementById("resEmoji").textContent = rate>=0.9?"🏆":rate>=0.67?"🎉":rate>=0.4?"💪":"📚";
+  document.getElementById("resTitle").textContent = MODE_LABEL[G.mode]+" けっか";
+  document.getElementById("resScore").textContent = score;
+  document.getElementById("resTotal").textContent = total;
+  document.getElementById("resGain").textContent = "+"+G.gained+" XP";
+
+  const passEl = document.getElementById("resPass");
+  if (isMock){
+    const pass = score>=QUIZ_DATA.mockPass;
+    passEl.style.display="";
+    passEl.className = "result-pass "+(pass?"ok":"ng");
+    passEl.textContent = pass ? "🎓 合格ライン突破!(20問以上)" : `あと${QUIZ_DATA.mockPass-score}問で合格ライン`;
+    S.mocks.push({date:new Date().toISOString().slice(0,10), score, pass});
+    if (pass){ sndFanfare(); confetti(60); }
+    save(); checkBadges();
+  } else passEl.style.display="none";
+
+  document.getElementById("resSub").textContent =
+    rate>=0.9?"完璧!本番でも余裕の合格レベル":
+    rate>=0.67?"合格ライン相当!この調子!":
+    rate>=0.4?"のびしろたっぷり!解説を読み直そう":"焦らずコツコツ。弱点復習がおすすめ!";
+
+  // 分野別内訳(模試のみ)
+  const barsBox = document.getElementById("resCatBars");
+  barsBox.innerHTML = "";
+  if (isMock){
+    const byCat = {};
+    G.answers.forEach(a=>{ const c=a.q.cat; byCat[c]=byCat[c]||{ok:0,n:0}; byCat[c].n++; if(a.ok)byCat[c].ok++; });
+    barsBox.innerHTML = "<div style='font-weight:800;font-size:13px;margin-bottom:6px;'>分野別の成績</div>";
+    for (const [c,v] of Object.entries(byCat)) barsBox.appendChild(catBar(c, v.ok, v.n));
+  }
+
+  // 間違い復習リスト
+  const rev = document.getElementById("resReview");
+  rev.innerHTML = "";
+  const wrongs = G.answers.filter(a=>!a.ok);
+  if (wrongs.length){
+    rev.innerHTML = "<div style='font-weight:800;font-size:13px;margin-bottom:6px;'>📌 まちがえた問題</div>";
+    wrongs.forEach(a=>{
+      const d = document.createElement("div");
+      d.className = "review-item";
+      d.innerHTML = `<div class="rq">${esc(a.q.q)}</div>
+        <div class="ra">答え: ${esc(a.q.c[a.q.a])}</div>
+        <div class="rx">${esc(a.q.ex)}<br>📖 ${esc(a.q.ref)}</div>`;
+      rev.appendChild(d);
+    });
+  }
+}
+function esc(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+function catBar(cat, ok, n){
+  const c = CATS[cat], pct = n?Math.round(ok/n*100):0;
+  const row = document.createElement("div");
+  row.className = "cat-bar-row";
+  row.innerHTML = `<div class="cat-bar-label"><span>${c.icon} ${c.name}</span><span>${ok}/${n} (${pct}%)</span></div>
+    <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%;background:${c.color}"></div></div>`;
+  return row;
+}
+document.getElementById("retryBtn").addEventListener("click",()=>{ sndTap(); startQuiz(G.mode, G.opt); });
+
+/* =====================================================
+   ホーム・分野選択・成績・バッジ
+===================================================== */
+document.querySelectorAll(".mode-card").forEach(b=>{
+  b.addEventListener("click",()=>{
+    sndTap();
+    const m = b.dataset.mode;
+    if (m==="catselect"){ renderCatGrid(); show("cat"); }
+    else startQuiz(m);
+  });
+});
+function renderCatGrid(){
+  const g = document.getElementById("catGrid");
+  g.innerHTML = "";
+  for (const [key,c] of Object.entries(CATS)){
+    const st = S.perCat[key], n = st?st.ok+st.ng:0;
+    const acc = n?Math.round(st.ok/n*100)+"%":"未挑戦";
+    const btn = document.createElement("button");
+    btn.className = "cat-card";
+    btn.style.background = c.color;
+    btn.innerHTML = `<span class="ci">${c.icon}</span>${c.name}<span class="acc">正答率 ${acc}</span>`;
+    btn.addEventListener("click",()=>{ sndTap(); startQuiz("cat", key); });
+    g.appendChild(btn);
+  }
+}
+
+document.getElementById("btnStats").addEventListener("click",()=>{ sndTap(); renderStats(); show("stats"); });
+document.getElementById("btnBadges").addEventListener("click",()=>{ sndTap(); renderBadges(); show("badges"); });
+
+function renderStats(){
+  const c = S.counters;
+  const acc = c.answered?Math.round(c.correct/c.answered*100):0;
+  document.getElementById("statTotals").innerHTML =
+    `<div class="stat-line"><span>解いた問題</span><b>${c.answered}問</b></div>
+     <div class="stat-line"><span>正解</span><b>${c.correct}問 (${acc}%)</b></div>
+     <div class="stat-line"><span>ベストコンボ</span><b>🔥${c.bestCombo}</b></div>
+     <div class="stat-line"><span>レベル</span><b>Lv.${levelOf(S.xp)} ${titleOf(levelOf(S.xp))}</b></div>`;
+  const bars = document.getElementById("statCatBars");
+  bars.innerHTML = "";
+  for (const key of Object.keys(CATS)){
+    const st = S.perCat[key]||{ok:0,ng:0};
+    bars.appendChild(catBar(key, st.ok, st.ok+st.ng));
+  }
+  const his = document.getElementById("mockHistory");
+  his.innerHTML = S.mocks.length ? "" : "<li>まだ模試を受けていません</li>";
+  S.mocks.slice(-15).reverse().forEach(m=>{
+    const li = document.createElement("li");
+    li.innerHTML = `<span>${m.date}</span><b style="color:${m.pass?'var(--good)':'var(--bad)'}">${m.score}/30 ${m.pass?'合格🎓':'不合格'}</b>`;
+    his.appendChild(li);
+  });
+}
+function renderBadges(){
+  const g = document.getElementById("badgeGrid");
+  g.innerHTML = "";
+  for (const b of BADGES){
+    const got = S.badges.includes(b.id);
+    const d = document.createElement("div");
+    d.className = "badge-cell"+(got?"":" locked");
+    d.innerHTML = `<div class="badge-ic">${b.ic}</div><div class="badge-nm">${b.nm}</div>`;
+    g.appendChild(d);
+  }
+}
+
+document.getElementById("resetBtn").addEventListener("click",()=>{
+  if (!confirm("レベル・成績・バッジをすべて消します。よろしいですか?")) return;
+  S = defaultSave(); save(); renderPlayer(); renderStats();
+});
+
+document.getElementById("soundBtn").addEventListener("click",()=>{
+  S.sound = !S.sound; save(); renderPlayer(); if(S.sound) sndOK();
+});
+
+/* =====================================================
+   起動
+===================================================== */
+renderPlayer();
+if ("serviceWorker" in navigator){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>
