@@ -240,6 +240,25 @@
   .lg.j{background:var(--warn-bg);color:var(--warn)}
   .lg.n{background:var(--ok-bg);color:var(--ok)}
 
+  /* notes */
+  .note-search{padding:12px 16px 6px}
+  .note-search input{width:100%;background:#fff;border:1.5px solid var(--line2);border-radius:12px;
+    padding:12px 14px;font-size:15px;font-family:inherit;outline:none}
+  .note-search input:focus{border-color:var(--navy)}
+  .note-tip{font-size:11.5px;color:var(--dim);padding:0 16px 6px;line-height:1.6}
+  .note-sec{margin:12px 16px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;box-shadow:var(--shadow)}
+  .note-h{display:flex;align-items:center;gap:8px;padding:11px 14px;font-weight:800;font-size:14px;color:#fff}
+  .note-t{width:100%;border-collapse:collapse}
+  .note-t tr{border-top:1px solid var(--line-soft,#eee)}
+  .note-t tr:first-child{border-top:none}
+  .note-t td{padding:9px 12px;vertical-align:top;font-size:13.5px;line-height:1.55}
+  .note-t td.k{width:44%;font-weight:700;color:var(--ink)}
+  .note-t td.v{color:var(--navy);font-weight:700}
+  .note-t td .src{display:block;font-size:10.5px;color:var(--faint);font-weight:600;margin-top:2px}
+  .note-t td .v .val{color:var(--accent,#8b0000)}
+  mark{background:#fff2b8;color:inherit;border-radius:2px;padding:0 1px}
+  .note-empty{text-align:center;color:var(--dim);padding:30px 16px;font-size:14px}
+
   /* confetti */
   #confetti{position:fixed;inset:0;pointer-events:none;z-index:200;overflow:hidden}
   .cft{position:absolute;width:9px;height:14px;top:-20px;will-change:transform;border-radius:1px}
@@ -421,11 +440,23 @@
     <div style="height:20px"></div>
   </section>
 
+  <!-- ============ NOTES (検索付き要点集) ============ -->
+  <section id="v-notes" class="view">
+    <div class="topbar"><div class="tt">📖 要点ノート</div></div>
+    <div class="note-search">
+      <input id="noteSearch" type="search" inputmode="search" placeholder="数値・語句で検索(例: 12.5cm / 絶縁 / 283 / 調速機)">
+    </div>
+    <div class="note-tip">考査はテキスト持込可。「どこに何が書いてあるか」を素早く引く練習に。数値は原典で最終確認を。</div>
+    <div id="noteBody"></div>
+    <div style="height:20px"></div>
+  </section>
+
 </div>
 
 <!-- bottom nav -->
 <nav class="nav" id="nav">
   <button class="nav-btn on" data-nav="home"><span class="ic">🏠</span>ホーム</button>
+  <button class="nav-btn" data-nav="notes"><span class="ic">📖</span>ノート</button>
   <button class="nav-btn" data-nav="stats"><span class="ic">📊</span>記録</button>
 </nav>
 
@@ -901,11 +932,39 @@
       '<span class="num">$1</span>');
     return h;
   }
-  const VIEWS=["home","quiz","flash","result","stats"];
+  const VIEWS=["home","quiz","flash","result","stats","notes"];
   function show(v){
     VIEWS.forEach(x=>$("#v-"+x).classList.toggle("active",x===v));
     if(v==="home"){ renderHome(); setNav("home"); }
     if(v==="stats"){ renderStats(); setNav("stats"); }
+    if(v==="notes"){ renderNotes($("#noteSearch").value); setNav("notes"); }
+  }
+
+  /* ---------- notes (searchable cheat-sheet) ---------- */
+  function hl(text, q){
+    const t=escapeHtml(text);
+    if(!q) return t;
+    try{ const re=new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");
+      return t.replace(re,"<mark>$1</mark>"); }catch(e){ return t; }
+  }
+  function renderNotes(query){
+    const q=(query||"").trim();
+    const body=$("#noteBody"); body.innerHTML="";
+    let shown=0;
+    (QB.notes||[]).forEach(sec=>{
+      const rows = q ? sec.items.filter(it=>(it[0]+it[1]+it[2]+sec.t).toLowerCase().includes(q.toLowerCase())) : sec.items;
+      if(!rows.length) return;
+      shown+=rows.length;
+      const c=catOf(sec.cat);
+      const box=document.createElement("div"); box.className="note-sec";
+      let html=`<div class="note-h" style="background:${c?c.color:'#334'}">${escapeHtml(sec.t)}</div><table class="note-t"><tbody>`;
+      rows.forEach(it=>{
+        html+=`<tr><td class="k">${hl(it[0],q)}</td><td class="v"><span class="val">${hl(it[1],q)}</span><span class="src">§ ${hl(it[2],q)}</span></td></tr>`;
+      });
+      html+="</tbody></table>";
+      box.innerHTML=html; body.appendChild(box);
+    });
+    if(!shown){ body.innerHTML=`<div class="note-empty">「${escapeHtml(q)}」に一致する項目がありません</div>`; }
   }
   function setNav(v){ $$(".nav-btn").forEach(b=>b.classList.toggle("on",b.dataset.nav===v)); }
   function backHome(){ clearInterval(timerH); document.body.classList.remove("quiz-mode"); show("home"); }
@@ -938,6 +997,7 @@
     a.download="elevator-inspector-save.json"; a.click();
   };
   $("#resetBtn").onclick=()=>{ if(confirm("すべての学習記録を消去します。よろしいですか?")){ S=DEF(); save(); show("home"); } };
+  $("#noteSearch").addEventListener("input",e=>renderNotes(e.target.value));
 
   // keyboard (desktop)
   document.addEventListener("keydown",e=>{
