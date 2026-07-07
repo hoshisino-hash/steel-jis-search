@@ -1,8 +1,8 @@
-name: Deploy liftquest to GitHub Pages
+name: Deploy site (liftquest + qrsafety) to GitHub Pages
 
 on:
   push:
-    branches: [ "main", "claude/elevator-inspector-game-gfrmlm" ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 permissions:
@@ -25,8 +25,14 @@ jobs:
       - uses: actions/configure-pages@v5
         with:
           enablement: true
+      # liftquest は従来どおりサイトルートに配置し、qrsafety を /qrsafety/ に追加する
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          cp -r liftquest/. _site/
+          cp -r qrsafety _site/qrsafety
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: liftquest
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4
