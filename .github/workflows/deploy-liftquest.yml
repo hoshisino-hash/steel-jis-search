@@ -2,7 +2,7 @@ name: Deploy site (liftquest + qrsafety) to GitHub Pages
 
 on:
   push:
-    branches: [ "main", "claude/qr-code-safety-alerts-udru4y" ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 permissions:
