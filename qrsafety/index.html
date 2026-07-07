@@ -345,6 +345,10 @@
         <label>再通知までの間隔(秒)<span class="hint">同じ地点の音声を繰り返さない時間</span></label>
         <input type="number" id="setCooldown" min="0" max="3600" step="10">
       </div>
+      <div class="set-row">
+        <label>起動時に自動スキャン開始<span class="hint">胸部マウント運用向け。カメラ許可済みの端末で有効</span></label>
+        <span class="toggle"><input type="checkbox" id="setAutoStart"><span class="knob" data-for="setAutoStart"></span></span>
+      </div>
     </div>
 
     <div class="card">
@@ -425,7 +429,7 @@ const LS = {
 };
 const DEFAULT_SETTINGS = {
   voice: true, beep: true, rate: 1.0, volume: 1.0,
-  confirmSec: 3, cooldownSec: 60,
+  confirmSec: 3, cooldownSec: 60, autoStart: false,
 };
 function loadJSON(key, fallback) {
   try { const v = JSON.parse(localStorage.getItem(key)); return v ?? fallback; }
@@ -612,8 +616,23 @@ function stopScan() {
 
 $('btnScan').addEventListener('click', () => (scanTimer ? stopScan() : startScan()));
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden && scanTimer) stopScan();
+  if (document.hidden) {
+    if (scanTimer) stopScan();
+  } else if (settings.autoStart && !scanTimer) {
+    // 胸部装着運用: 画面復帰したら自動でスキャン再開
+    startScan();
+  }
 });
+// 自動起動時はユーザー操作なしのため音声がブロックされることがある。
+// 最初のタップでオーディオを確実に解放する。
+document.addEventListener('pointerdown', () => {
+  ensureAudio();
+  if ('speechSynthesis' in window && !speechSynthesis.speaking) {
+    const u = new SpeechSynthesisUtterance('');
+    u.volume = 0;
+    speechSynthesis.speak(u);
+  }
+}, { once: true });
 
 async function processFrame() {
   if (busy || !video.videoWidth) return;
@@ -926,9 +945,11 @@ function bindSettings() {
   $('setVolume').value = settings.volume;
   $('setConfirmSec').value = settings.confirmSec;
   $('setCooldown').value = settings.cooldownSec;
+  $('setAutoStart').checked = settings.autoStart;
   const save = () => saveJSON(LS.settings, settings);
   $('setVoice').addEventListener('change', e => { settings.voice = e.target.checked; save(); });
   $('setBeep').addEventListener('change', e => { settings.beep = e.target.checked; save(); });
+  $('setAutoStart').addEventListener('change', e => { settings.autoStart = e.target.checked; save(); });
   $('setRate').addEventListener('change', e => { settings.rate = +e.target.value; save(); });
   $('setVolume').addEventListener('change', e => { settings.volume = +e.target.value; save(); });
   $('setConfirmSec').addEventListener('change', e => {
@@ -987,6 +1008,15 @@ bindSettings();
 updateStats();
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('service-worker.js').catch(() => {}));
+}
+if (settings.autoStart) {
+  // カメラ許可済みなら操作なしでスキャン開始(胸部マウント運用)
+  setTimeout(() => {
+    if (!scanTimer) {
+      startScan();
+      toast('自動スキャンを開始しました。音声が鳴らない場合は画面を一度タップしてください。', 4200);
+    }
+  }, 400);
 }
 </script>
 </body>
