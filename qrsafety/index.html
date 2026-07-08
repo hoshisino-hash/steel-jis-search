@@ -170,6 +170,18 @@
   .spot-msg { font-size: 13px; color: var(--ink-dim); margin: 3px 0 8px; }
   .spot-actions { display:flex; gap:8px; flex-wrap: wrap; }
 
+  .inline-select {
+    background: var(--card); border:1px solid var(--line); color: var(--ink);
+    border-radius: 10px; padding: 8px 10px; font-family: inherit; font-size: 13.5px;
+  }
+  .tpl-wrap { display:flex; flex-wrap:wrap; gap:6px; }
+  .tpl-chip {
+    background: var(--card2); border:1px solid var(--line); color: var(--ink);
+    border-radius: 99px; padding: 6px 12px; font-family: inherit;
+    font-size: 12.5px; font-weight: 700; cursor: pointer;
+  }
+  .tpl-chip:active { background: var(--accent); color: var(--accent-ink); }
+
   /* ===== log ===== */
   .log-item {
     background: var(--card); border:1px solid var(--line); border-radius: 12px;
@@ -297,8 +309,16 @@
       <button class="btn grow" id="btnAddSpot">＋ 地点を登録</button>
       <button class="btn ghost" id="btnPrintAll">🖨 QR一括印刷</button>
     </div>
+    <div class="row" style="margin-top:8px">
+      <label class="muted" style="flex:none">印刷サイズ</label>
+      <select id="printSize" class="inline-select grow">
+        <option value="standard" selected>標準(A4に4面・85mm)</option>
+        <option value="large">大判(A4に1面・遠くから見える)</option>
+        <option value="small">小ラベル(A4に9面・55mm)</option>
+      </select>
+    </div>
     <div id="spotList"></div>
-    <p class="muted" style="margin-top:12px">登録した地点ごとに固有のQRコードが発行されます。印刷して現場の該当箇所に貼り付けてください。</p>
+    <p class="muted" style="margin-top:12px">地点は自由に登録できます(場所・文言・危険度は任意)。登録するとQRコードが発行されるので、印刷して現場の該当箇所に貼り付けてください。</p>
   </section>
 
   <!-- ===== 記録 ===== -->
@@ -381,7 +401,11 @@
   <div class="modal">
     <h3 id="spotModalTitle">地点を登録</h3>
     <div class="field">
-      <label>地点名(例: ピット内作業、機械室 巻上機付近)</label>
+      <label>テンプレート(タップで下の欄に反映 → 地点名を現場に合わせて編集)</label>
+      <div class="tpl-wrap" id="tplWrap"></div>
+    </div>
+    <div class="field">
+      <label>地点名(例: ピット内作業、B1F 電気室、屋上ハッチ)</label>
       <input type="text" id="fSpotName" maxlength="40" placeholder="地点名">
     </div>
     <div class="field">
@@ -410,7 +434,8 @@
     <div id="qrImgWrap"></div>
     <div class="payload" id="qrPayload"></div>
     <div class="row" style="margin-top:14px">
-      <button class="btn grow" id="btnPrintOne">🖨 このQRを印刷</button>
+      <button class="btn grow" id="btnPrintOne">🖨 印刷</button>
+      <button class="btn ghost" id="btnSavePng">⬇ PNG保存</button>
       <button class="btn ghost" id="btnCloseQr">閉じる</button>
     </div>
   </div>
@@ -849,6 +874,37 @@ function renderSpots() {
   });
 }
 
+/* 汎用の危険パターンテンプレート(タップで入力欄に反映) */
+const TEMPLATES = [
+  { name: '感電注意', msg: '活線部に注意。検電器で無電圧を確認し、絶縁保護具を着用してください。', level: '高' },
+  { name: '高所・墜落注意', msg: '墜落注意。フルハーネスのフック掛けと足場を確認してください。', level: '高' },
+  { name: '挟まれ・巻き込まれ', msg: '可動部・回転部に注意。機器の停止を確認してから作業してください。', level: '高' },
+  { name: '酸欠・閉所', msg: '立入前に酸素濃度を測定し、換気を確保してください。', level: '高' },
+  { name: '火気・可燃物', msg: '火気厳禁。周囲の可燃物と消火器の位置を確認してください。', level: '中' },
+  { name: '転倒・段差注意', msg: '足元注意。段差・開口部・滑りやすい床に注意してください。', level: '中' },
+  { name: '立入制限区域', msg: '関係者以外立入禁止。入室記録と退出時の施錠を確認してください。', level: '中' },
+  { name: '重量物・運搬', msg: '重量物注意。無理な姿勢を避け、台車や補助者を使ってください。', level: '中' },
+  { name: '保護具着用', msg: 'この先は保護帽・保護メガネ・手袋を着用してください。', level: '低' },
+];
+function renderTemplates() {
+  const wrap = $('tplWrap');
+  wrap.innerHTML = '';
+  TEMPLATES.forEach(t => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tpl-chip';
+    b.textContent = t.name;
+    b.addEventListener('click', () => {
+      $('fSpotName').value = t.name;
+      $('fSpotMsg').value = t.msg;
+      $('fSpotLevel').value = t.level;
+      $('fSpotName').focus();
+    });
+    wrap.appendChild(b);
+  });
+}
+renderTemplates();
+
 function openSpotModal(spot) {
   editingId = spot ? spot.id : null;
   $('spotModalTitle').textContent = spot ? '地点を編集' : '地点を登録';
@@ -903,7 +959,14 @@ $('btnPrintAll').addEventListener('click', () => {
   printSpots(spots);
 });
 
+/* 印刷サイズ(mm)。貼る場所に合わせて選択 */
+const PRINT_SIZES = {
+  large:    { card: 175, qr: 115, head: 8,   name: 13,  msg: 6,   foot: 4,   border: 2.5, showMsg: true },
+  standard: { card: 85,  qr: 50,  head: 4.2, name: 6.5, msg: 3.6, foot: 2.8, border: 1.2, showMsg: true },
+  small:    { card: 55,  qr: 36,  head: 3,   name: 4.6, msg: 2.6, foot: 2,   border: 0.8, showMsg: false },
+};
 function printSpots(list) {
+  const sz = PRINT_SIZES[$('printSize').value] || PRINT_SIZES.standard;
   const w = window.open('', '_blank');
   if (!w) { toast('ポップアップがブロックされました。許可してください。'); return; }
   const esc = (s) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -912,25 +975,45 @@ function printSpots(list) {
       <div class="p-head">⚠ ${esc(spot.level)}リスク箇所</div>
       <div class="p-name">${esc(spot.name)}</div>
       <img src="${qrDataUrl(payloadOf(spot), 10)}" alt="QR">
-      <div class="p-msg">${esc(spot.msg)}</div>
+      ${sz.showMsg ? `<div class="p-msg">${esc(spot.msg)}</div>` : ''}
       <div class="p-foot">作業前にカメラをかざして音声確認 — QRセーフティボイス</div>
     </div>`).join('');
   w.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>QR印刷</title><style>
     body { font-family: "BIZ UDPGothic", "Hiragino Sans", Meiryo, sans-serif; margin: 0; padding: 10mm; }
-    .p-card { width: 85mm; display: inline-block; vertical-align: top; border: 1.2mm solid #000;
-      border-radius: 4mm; padding: 5mm; margin: 0 5mm 8mm 0; text-align: center;
+    .p-card { width: ${sz.card}mm; display: inline-block; vertical-align: top; border: ${sz.border}mm solid #000;
+      border-radius: 4mm; padding: ${sz.card * 0.06}mm; margin: 0 4mm 6mm 0; text-align: center;
       page-break-inside: avoid; }
     .p-card.lv高 { border-color: #c62828; }
     .p-card.lv中 { border-color: #ef6c00; }
-    .p-head { font-weight: 800; font-size: 4.2mm; }
+    .p-head { font-weight: 800; font-size: ${sz.head}mm; }
     .lv高 .p-head { color: #c62828; } .lv中 .p-head { color: #ef6c00; }
-    .p-name { font-weight: 800; font-size: 6.5mm; margin: 2mm 0; }
-    img { width: 50mm; height: 50mm; }
-    .p-msg { font-size: 3.6mm; text-align: left; margin-top: 2mm; }
-    .p-foot { font-size: 2.8mm; color: #666; margin-top: 3mm; }
+    .p-name { font-weight: 800; font-size: ${sz.name}mm; margin: 2mm 0; }
+    img { width: ${sz.qr}mm; height: ${sz.qr}mm; image-rendering: pixelated; }
+    .p-msg { font-size: ${sz.msg}mm; text-align: left; margin-top: 2mm; }
+    .p-foot { font-size: ${sz.foot}mm; color: #666; margin-top: 2mm; }
   </style></head><body>${cards}<script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>`);
   w.document.close();
 }
+
+/* QR画像をPNGで保存(自作の掲示物・書類への貼り込み用) */
+$('btnSavePng').addEventListener('click', async () => {
+  if (!qrModalSpot) return;
+  const img = new Image();
+  await new Promise((res, rej) => {
+    img.onload = res;
+    img.onerror = rej;
+    img.src = qrDataUrl(payloadOf(qrModalSpot), 16);
+  });
+  const c = document.createElement('canvas');
+  c.width = img.width;
+  c.height = img.height;
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(img, 0, 0);
+  c.toBlob(blob => {
+    if (blob) downloadBlob(blob, `QR_${qrModalSpot.name.replace(/[\\/:*?"<>|]/g, '_')}.png`);
+  }, 'image/png');
+});
 
 /* ================= 記録 ================= */
 function renderLogs() {
@@ -994,7 +1077,9 @@ function downloadBlob(blob, name) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = name;
+  document.body.appendChild(a);
   a.click();
+  a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 }
 
