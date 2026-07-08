@@ -1,7 +1,7 @@
 // Service Worker for QRセーフティボイス
 // バージョンを上げると古いキャッシュが自動破棄される
 
-const CACHE_VERSION = 'v1.1.0';
+const CACHE_VERSION = 'v1.2.0';
 const CACHE_NAME = `qrsafety-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -9,6 +9,7 @@ const PRECACHE_URLS = [
   './index.html',
   './jsQR.js',
   './qrcode.js',
+  './qrcode_UTF8.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
