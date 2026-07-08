@@ -16,6 +16,7 @@
 <title>QRセーフティボイス — 現場QR注意喚起</title>
 <script src="jsQR.js" defer></script>
 <script src="qrcode.js" defer></script>
+<script src="qrcode_UTF8.js" defer></script>
 <style>
   :root {
     --bg: #101820;
@@ -461,13 +462,45 @@ function genId() {
   for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
   return s;
 }
+/* QRペイロード
+   QSA2: 地点情報(名前・メッセージ・危険度)をQR自体に格納する自己完結形式。
+         どの端末で読み取っても登録不要で音声喚起でき、読んだ端末に自動登録される。
+   QSA:  旧形式(IDのみ)。過去に印刷したQRとの互換のためローカル照合を残す。 */
 const PAYLOAD_PREFIX = 'QSA:';
-const payloadOf = (spot) => PAYLOAD_PREFIX + spot.id;
-const spotByPayload = (text) => {
-  if (!text.startsWith(PAYLOAD_PREFIX)) return null;
-  const id = text.slice(PAYLOAD_PREFIX.length).trim();
-  return spots.find(s => s.id === id) || null;
-};
+const PAYLOAD_PREFIX2 = 'QSA2:';
+const payloadOf = (spot) =>
+  PAYLOAD_PREFIX2 + JSON.stringify({ i: spot.id, n: spot.name, m: spot.msg, l: spot.level });
+function parsePayload(text) {
+  if (text.startsWith(PAYLOAD_PREFIX2)) {
+    try {
+      const d = JSON.parse(text.slice(PAYLOAD_PREFIX2.length));
+      if (!d || typeof d.n !== 'string' || typeof d.m !== 'string') return { error: 'broken' };
+      const qrSpot = {
+        id: String(d.i || '').trim() || genId(),
+        name: d.n.slice(0, 40),
+        msg: d.m.slice(0, 200),
+        level: ['高', '中', '低'].includes(d.l) ? d.l : '中',
+      };
+      // 読み取った端末に未登録なら自動登録(共有先の端末でも地点一覧・記録が揃う)。
+      // 登録済みならローカルの内容を優先(端末側で編集した文言を尊重)。
+      const local = spots.find(s => s.id === qrSpot.id);
+      if (!local) {
+        spots.push(Object.assign({ created: Date.now() }, qrSpot));
+        saveJSON(LS.spots, spots);
+        updateStats();
+      }
+      return { spot: local || qrSpot };
+    } catch {
+      return { error: 'broken' };
+    }
+  }
+  if (text.startsWith(PAYLOAD_PREFIX)) {
+    const id = text.slice(PAYLOAD_PREFIX.length).trim();
+    const local = spots.find(s => s.id === id);
+    return local ? { spot: local } : { error: 'legacy-unknown' };
+  }
+  return { error: 'foreign' };
+}
 
 /* ================= 画面切替 ================= */
 const screens = { scan: 'screen-scan', spots: 'screen-spots', log: 'screen-log', settings: 'screen-settings' };
@@ -532,13 +565,31 @@ if ('speechSynthesis' in window) {
 }
 function speak(text) {
   if (!settings.voice || !('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'ja-JP';
-  if (jaVoice) u.voice = jaVoice;
-  u.rate = settings.rate;
-  u.volume = settings.volume;
-  speechSynthesis.speak(u);
+  const doSpeak = () => {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ja-JP';
+    if (jaVoice) u.voice = jaVoice;
+    u.rate = settings.rate;
+    u.volume = settings.volume;
+    let started = false;
+    u.onstart = () => { started = true; };
+    // Chrome系はresume()を挟まないと停止状態のまま無音になることがある
+    speechSynthesis.resume();
+    speechSynthesis.speak(u);
+    // 発話が始まらないまま終わった場合(端末TTSの取りこぼし)は一度だけ再試行
+    setTimeout(() => {
+      if (!started && !speechSynthesis.speaking && !speechSynthesis.pending) {
+        speechSynthesis.speak(u);
+      }
+    }, 700);
+  };
+  if (speechSynthesis.speaking || speechSynthesis.pending) {
+    // iOSはcancel()直後のspeak()を飲み込むことがあるため少し間を置く
+    speechSynthesis.cancel();
+    setTimeout(doSpeak, 120);
+  } else {
+    doSpeak();
+  }
 }
 function announce(spot) {
   beep();
@@ -678,23 +729,26 @@ function onFrame(text, now) {
 }
 
 function beginSession(text, now) {
-  const spot = spotByPayload(text);
-  if (!spot) {
+  const parsed = parsePayload(text);
+  if (!parsed.spot) {
     if (now - unknownToastAt > 8000) {
       unknownToastAt = now;
-      toast(text.startsWith(PAYLOAD_PREFIX)
-        ? 'このQRの地点は未登録です(削除済みの可能性)。'
-        : '対象外のQRコードです: ' + text.slice(0, 40));
+      toast(parsed.error === 'legacy-unknown'
+        ? '旧形式QRでこの端末に地点未登録です。地点画面からQRを印刷し直すと、どの端末でも読めるQRになります。'
+        : parsed.error === 'broken'
+          ? 'QRの内容を読み取れませんでした(破損の可能性)。印刷し直してください。'
+          : '対象外のQRコードです: ' + text.slice(0, 40), 4200);
     }
     return;
   }
+  const spot = parsed.spot;
   cur = { payload: text, spot, firstSeen: now, lastSeen: now, confirmed: false };
   const cooled = !lastAnnounced[spot.id] || now - lastAnnounced[spot.id] > settings.cooldownSec * 1000;
   if (cooled) {
     lastAnnounced[spot.id] = now;
     announce(spot);
   }
-  showAlertCard(spot);
+  showAlertCard(spot, !cooled);
 }
 
 function updateSession(now) {
@@ -731,13 +785,15 @@ function endSession() {
   updateStats();
 }
 
-function showAlertCard(spot) {
+function showAlertCard(spot, muted) {
   const card = $('alertCard');
   card.className = 'card alert-card show lv' + spot.level;
   $('alertLv').textContent = spot.level;
   $('alertLv').className = 'lv-badge lv' + spot.level;
   $('alertName').textContent = spot.name;
-  $('alertMsg').textContent = spot.msg;
+  $('alertMsg').textContent = muted
+    ? spot.msg + '(音声は再通知間隔' + settings.cooldownSec + '秒以内のため省略)'
+    : spot.msg;
   $('dwellFill').style.width = '0%';
   $('dwellLabel').textContent = '確認中…';
 }
@@ -782,7 +838,7 @@ function renderSpots() {
     el.querySelector('[data-act="test"]').addEventListener('click', () => { ensureAudio(); announce(spot); });
     el.querySelector('[data-act="edit"]').addEventListener('click', () => openSpotModal(spot));
     el.querySelector('[data-act="del"]').addEventListener('click', () => {
-      if (confirm(`「${spot.name}」を削除しますか?\n(貼付済みQRは読み取っても反応しなくなります。記録は残ります)`)) {
+      if (confirm(`「${spot.name}」を削除しますか?\n(貼付済みQRには地点情報が入っているため、読み取ると再登録されます。完全に無効化する場合は貼付QRも撤去してください。記録は残ります)`)) {
         spots = spots.filter(s => s.id !== spot.id);
         saveJSON(LS.spots, spots);
         renderSpots();
@@ -811,6 +867,7 @@ $('btnSaveSpot').addEventListener('click', () => {
   if (editingId) {
     const s = spots.find(x => x.id === editingId);
     if (s) { s.name = name; s.msg = msg; s.level = level; }
+    toast('保存しました。QRには文言が印刷時のまま入っているため、内容を変えた場合はQRの印刷し直しをおすすめします。', 4200);
   } else {
     spots.push(mkSpot(name, msg, level));
   }
@@ -822,6 +879,10 @@ $('btnSaveSpot').addEventListener('click', () => {
 
 /* ===== QRコード生成・印刷 ===== */
 function qrDataUrl(payload, cell = 8) {
+  // 地点情報(日本語)をQRに直接格納するためUTF-8エンコーダを使用
+  if (qrcode.stringToBytesFuncs && qrcode.stringToBytesFuncs['UTF-8']) {
+    qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
+  }
   const qr = qrcode(0, 'M');
   qr.addData(payload);
   qr.make();
@@ -832,7 +893,7 @@ function showQr(spot) {
   qrModalSpot = spot;
   $('qrModalTitle').textContent = spot.name;
   $('qrImgWrap').innerHTML = `<img src="${qrDataUrl(payloadOf(spot))}" alt="QR">`;
-  $('qrPayload').textContent = payloadOf(spot) + '(このアプリ専用のIDです)';
+  $('qrPayload').textContent = '地点情報入りQR — どの端末のアプリでも登録不要で読み取れます(ID: ' + spot.id + ')';
   $('qrModalBg').classList.add('show');
 }
 $('btnCloseQr').addEventListener('click', () => $('qrModalBg').classList.remove('show'));
