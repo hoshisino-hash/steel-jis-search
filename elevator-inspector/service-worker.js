@@ -1,6 +1,6 @@
 // Service Worker — 昇降機検査員クエスト
 // CACHE_VERSION を上げると古いキャッシュが自動破棄される
-const CACHE_VERSION = 'v1.1.0';
+const CACHE_VERSION = 'v1.2.0';
 const CACHE_NAME = `elevator-inspector-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
