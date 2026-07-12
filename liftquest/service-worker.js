@@ -1,7 +1,7 @@
 // Service Worker for 昇降機検査員クエスト
 // バージョンを上げると古いキャッシュが自動破棄される
 
-const CACHE_VERSION = 'v1.1.1';
+const CACHE_VERSION = 'v1.2.0';
 const CACHE_NAME = `liftquest-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [

@@ -221,6 +221,23 @@
     background:var(--card); border-radius:var(--radius); padding:18px 16px;
     box-shadow:0 6px 0 rgba(0,0,0,.22); margin-bottom:14px;
   }
+  .note-search { margin-bottom:10px; }
+  .note-search input { width:100%; background:var(--card); color:var(--ink); border:none;
+    border-radius:14px; padding:13px 15px; font-size:15px; font-family:inherit; outline:none;
+    box-shadow:0 4px 0 rgba(0,0,0,.18); }
+  .note-tip { color:rgba(255,255,255,.88); font-size:12px; line-height:1.6; margin-bottom:12px; }
+  .note-sec { background:var(--card); border-radius:var(--radius); overflow:hidden;
+    margin-bottom:12px; box-shadow:0 6px 0 rgba(0,0,0,.22); }
+  .note-h { color:#fff; font-weight:800; font-size:14px; padding:11px 14px; letter-spacing:.02em; }
+  .note-t { width:100%; border-collapse:collapse; }
+  .note-t tr { border-top:1px solid #ece6f7; }
+  .note-t tr:first-child { border-top:none; }
+  .note-t td { padding:9px 12px; vertical-align:top; font-size:13px; line-height:1.55; color:var(--ink); }
+  .note-t td.k { width:44%; font-weight:700; }
+  .note-t td.v { color:#5a34c9; font-weight:700; }
+  .note-t td .src { display:block; font-size:10px; color:var(--ink-dim); font-weight:600; margin-top:2px; }
+  .note-empty { color:#fff; text-align:center; padding:30px 10px; font-weight:700; }
+  mark { background:var(--accent2); color:#3a2a00; border-radius:3px; padding:0 2px; }
   .panel h2 { font-size:16px; font-weight:800; margin-bottom:10px; }
   .stat-line { display:flex; justify-content:space-between; font-size:13.5px; padding:5px 0; border-bottom:1px dashed #e8e4f6; }
   .badge-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
@@ -324,6 +341,7 @@
       </button>
     </div>
     <div class="home-links">
+      <button id="btnNotes">📖 要点ノート</button>
       <button id="btnStats">📊 成績</button>
       <button id="btnBadges">🏅 バッジ</button>
     </div>
@@ -413,6 +431,17 @@
     <div class="panel">
       <div class="badge-grid" id="badgeGrid"></div>
     </div>
+  </section>
+
+  <!-- ============ NOTES (検索付き要点集) ============ -->
+  <section class="screen" id="scr-notes">
+    <div class="quiz-top"><button class="quit-btn" data-go="home">← もどる</button>
+      <div style="color:#fff;font-weight:800;">要点ノート</div></div>
+    <div class="note-search">
+      <input id="noteSearch" type="search" inputmode="search" placeholder="数値・語句で検索(例: 12.5cm / 絶縁 / 283 / 調速機)" autocomplete="off">
+    </div>
+    <p class="note-tip">考査はテキスト持込可。「どこに何が書いてあるか」を素早く引く練習に。数値は原典で最終確認を。</p>
+    <div id="noteBody"></div>
   </section>
 
 </div>
@@ -976,6 +1005,41 @@ function renderCatGrid(){
 
 document.getElementById("btnStats").addEventListener("click",()=>{ sndTap(); renderStats(); show("stats"); });
 document.getElementById("btnBadges").addEventListener("click",()=>{ sndTap(); renderBadges(); show("badges"); });
+
+/* ===== 要点ノート(検索付きチートシート) ===== */
+function hlNote(text,q){
+  const t = esc(text);
+  if(!q) return t;
+  try{ const re = new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");
+    return t.replace(re,"<mark>$1</mark>"); }catch(e){ return t; }
+}
+function renderNotes(query){
+  const q = (query||"").trim();
+  const body = document.getElementById("noteBody");
+  body.innerHTML = "";
+  const notes = QUIZ_DATA.notes || [];
+  let shown = 0;
+  notes.forEach(sec=>{
+    const rows = q
+      ? sec.items.filter(it => (it[0]+it[1]+it[2]+sec.t).toLowerCase().includes(q.toLowerCase()))
+      : sec.items;
+    if(!rows.length) return;
+    shown += rows.length;
+    const col = (CATS[sec.cat] && CATS[sec.cat].color) || "#5e35b1";
+    const box = document.createElement("div");
+    box.className = "note-sec";
+    let html = `<div class="note-h" style="background:${col}">${esc(sec.t)}</div><table class="note-t"><tbody>`;
+    rows.forEach(it=>{
+      html += `<tr><td class="k">${hlNote(it[0],q)}</td><td class="v">${hlNote(it[1],q)}<span class="src">§ ${hlNote(it[2],q)}</span></td></tr>`;
+    });
+    html += "</tbody></table>";
+    box.innerHTML = html;
+    body.appendChild(box);
+  });
+  if(!shown) body.innerHTML = `<div class="note-empty">「${esc(q)}」に一致する項目がありません</div>`;
+}
+document.getElementById("btnNotes").addEventListener("click",()=>{ sndTap(); renderNotes(document.getElementById("noteSearch").value); show("notes"); });
+document.getElementById("noteSearch").addEventListener("input",e=>renderNotes(e.target.value));
 
 function renderStats(){
   const c = S.counters;
